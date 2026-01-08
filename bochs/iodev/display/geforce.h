@@ -22,6 +22,8 @@
 
 #if BX_SUPPORT_GEFORCE
 
+#include "bxthread.h"
+
 #if BX_USE_GEFORCE_SMF
 #  define BX_GEFORCE_SMF  static
 #  define BX_GEFORCE_THIS theSvga->
@@ -470,6 +472,7 @@ private:
   BX_GEFORCE_SMF void ramht_lookup(Bit32u handle, Bit32u chid, Bit32u* object, Bit8u* engine);
 
   BX_GEFORCE_SMF void update_fifo_wait();
+  BX_GEFORCE_SMF void fifo_wakeup_thread();
   BX_GEFORCE_SMF void fifo_process();
   BX_GEFORCE_SMF void fifo_process(Bit32u chid);
   BX_GEFORCE_SMF int execute_command(Bit32u chid, Bit32u subc, Bit32u method, Bit32u param);
@@ -649,6 +652,12 @@ private:
   } hw_cursor;
 
   bx_ddc_c ddc;
+
+  // FIFO thread
+  BX_THREAD_VAR(fifo_thread_var);
+  BX_MUTEX(fifo_mutex);
+  bx_thread_sem_t fifo_wakeup_sem;
+  bool fifo_thread_running;
 
   bool is_unlocked() { return svga_unlock_special; }
 
