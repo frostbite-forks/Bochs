@@ -369,8 +369,11 @@ struct gf_channel
   Bit32u rect_hw;
 };
 
+BX_THREAD_FUNC(geforce_fifo_thread, indata);
+
 class bx_geforce_c : public bx_vgacore_c
 {
+  friend BX_THREAD_FUNC(geforce_fifo_thread, indata);
 public:
   bx_geforce_c();
   virtual ~bx_geforce_c();
