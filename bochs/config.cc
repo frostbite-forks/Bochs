@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2002-2025  The Bochs Project
+//  Copyright (C) 2002-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -519,7 +519,7 @@ void bx_init_options()
   bx_param_bool_c *enabled, *readonly;
   bx_param_enum_c *mode, *type, *toggle, *status;
   bx_param_filename_c *path;
-  char name[BX_PATHNAME_LEN], descr[512], label[512];
+  char name[BX_PATHNAME_LEN], descr[512], label[512], bxshare[BX_PATHNAME_LEN];
 
   bx_param_c *root_param = SIM->get_param(".");
 
@@ -726,7 +726,7 @@ void bx_init_options()
       "host",
       "Host allocated memory size (megabytes)",
       "Amount of host allocated memory in megabytes",
-      1, 2048,
+      1, 8192,
       BX_DEFAULT_MEM_MEGS);
   host_ramsize->set_ask_format("Enter host memory size (MB): [%d] ");
   ram->set_options(ram->SERIES_ASK);
@@ -735,8 +735,8 @@ void bx_init_options()
       "block_size",
       "Memory block granularity (kilobytes)",
       "Granularity of host memory allocation",
-      4, 8192,
-      128);
+      0, 8192,
+      0);
   mem_block_size->set_ask_format("Enter memory block size (KB): [%d] ");
   ram->set_options(ram->SERIES_ASK);
 
@@ -746,7 +746,8 @@ void bx_init_options()
       "Pathname of ROM image to load",
       "", BX_PATHNAME_LEN);
   path->set_format("Name of ROM BIOS image: %s");
-  sprintf(name, "%s" DIRECTORY_SEPARATOR "BIOS-bochs-latest", (char *)get_builtin_variable("BXSHARE"));
+  get_bxshare_path(bxshare);
+  sprintf(name, "%s" DIRECTORY_SEPARATOR "BIOS-bochs-latest", bxshare);
   path->set_initial_val(name);
   bx_param_num_c *romaddr = new bx_param_num_c(rom,
       "address",
@@ -775,7 +776,7 @@ void bx_init_options()
       "Pathname of VGA ROM image to load",
       "", BX_PATHNAME_LEN);
   path->set_format("Name of VGA BIOS image: %s");
-  sprintf(name, "%s" DIRECTORY_SEPARATOR "VGABIOS-lgpl-latest.bin", get_builtin_variable("BXSHARE"));
+  sprintf(name, "%s" DIRECTORY_SEPARATOR "VGABIOS-lgpl-latest.bin", bxshare);
   path->set_initial_val(name);
   vgarom->set_options(vgarom->SERIES_ASK);
 
@@ -1205,7 +1206,7 @@ void bx_init_options()
       "Type of floppy drive",
       "Type of floppy drive",
       floppy_devtype_names,
-      (i==0)?BX_FDD_350HD:BX_FDD_NONE,
+      ((i==0) && !BX_SUPPORT_PCI) ? BX_FDD_350HD:BX_FDD_NONE,
       BX_FDD_NONE);
     devtype->set_ask_format("What type of floppy drive? [%s] ");
     devtype->set_handler(bx_param_handler);

@@ -105,6 +105,17 @@ BOCHSAPI BX_MEM_C bx_mem;
 
 char *bochsrc_filename = NULL;
 
+Bit32u round_up_to_power_of_2(Bit32u x)
+{
+  Bit32u r = x - 1;
+  r |= r >> 1;
+  r |= r >> 2;
+  r |= r >> 4;
+  r |= r >> 8;
+  r |= r >> 16;
+  return r + 1;
+}
+
 size_t bx_get_timestamp(char *buffer)
 {
 #if VER_DEVFLAG == 1
@@ -1308,6 +1319,12 @@ void bx_init_hardware()
 
   bx_param_num_c *bxp_memblock_size = SIM->get_param_num(BXPN_MEM_BLOCK_SIZE);
   Bit32u memBlockSize = (Bit32u)(bxp_memblock_size->get64() * 1024);
+  if (memBlockSize < 4096) {
+    memBlockSize = memSize / 4096;
+    if (memBlockSize < 4096) memBlockSize = 4096;
+    memBlockSize = round_up_to_power_of_2(memBlockSize);
+    BX_INFO(("Auto-adjusting memory block size to %u", memBlockSize));
+  }
 
   BX_MEM(0)->init_memory(memSize, hostMemSize, memBlockSize);
 

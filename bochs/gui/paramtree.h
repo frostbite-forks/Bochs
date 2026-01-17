@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2010-2021  The Bochs Project
+//  Copyright (C) 2010-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -496,7 +496,7 @@ typedef void (*list_restore_handler)(void *devptr, class bx_list_c *);
 class BOCHSAPI bx_list_c : public bx_param_c {
 protected:
   // chained list of bx_listitem_t
-  bx_listitem_t *list;
+  bx_listitem_t *head, *tail;
   int size;
   // for a menu, the value of choice before the call to "ask" is default.
   // After ask, choice holds the value that the user chose. Choice defaults
@@ -508,6 +508,7 @@ protected:
   // save / restore support
   void *sr_devptr;
   list_restore_handler restore_handler;
+  bool unsafe;
 public:
   enum {
     // When a bx_list_c is displayed as a menu, SHOW_PARENT controls whether or
@@ -537,12 +538,11 @@ public:
     USE_SCROLL_WINDOW = (1<<5)
   } bx_listopt_bits;
   bx_list_c(bx_param_c *parent);
-  bx_list_c(bx_param_c *parent, const char *name);
-  bx_list_c(bx_param_c *parent, const char *name, const char *title);
-  bx_list_c(bx_param_c *parent, const char *name, const char *title, bx_param_c **init_list);
+  bx_list_c(bx_param_c *parent, const char *name, const char *title = "", bx_param_c **init_list = NULL);
   virtual ~bx_list_c();
   bx_list_c *clone();
   void add(bx_param_c *param);
+  void unsafe_insertions(bool unsafe) { this->unsafe = unsafe; }
   bx_param_c *get(int index);
   bx_param_c *get_by_name(const char *name);
   int get_size() const { return size; }

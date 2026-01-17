@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2002-2025  The Bochs Project
+//  Copyright (C) 2002-2026  The Bochs Project
 //
 //  I/O port handlers API Copyright (C) 2003 by Frank Cornelis
 //
@@ -219,6 +219,8 @@ void bx_devices_c::init(BX_MEM_C *newmem)
         } else {
           BX_ERROR(("Disabling AGP not supported by PCI chipset"));
         }
+      } else if (!strcmp(argv[i], "nofdc")) {
+        pci.advopts |= BX_PCI_ADVOPT_NOFDC;
       } else {
         BX_ERROR(("Unknown advanced PCI option '%s'", argv[i]));
       }
@@ -254,7 +256,17 @@ void bx_devices_c::init(BX_MEM_C *newmem)
   if (pluginVgaDevice == &stubVga) {
     PLUG_load_plugin_var(BX_PLUGIN_VGA, PLUGTYPE_VGA);
   }
-  PLUG_load_plugin(floppy, PLUGTYPE_CORE);
+#if BX_SUPPORT_PCI
+  if (!pci.enabled || ((pci.advopts & BX_PCI_ADVOPT_NOFDC) == 0) ||
+      (SIM->get_param_enum(BXPN_FLOPPYA_DEVTYPE)->get() != BX_FDD_NONE) ||
+      (SIM->get_param_enum(BXPN_FLOPPYB_DEVTYPE)->get() != BX_FDD_NONE)) {
+#endif
+    PLUG_load_plugin(floppy, PLUGTYPE_STANDARD);
+#if BX_SUPPORT_PCI
+  } else {
+    BX_INFO(("FDC device loading disabled"));
+  }
+#endif
 
 #if BX_SUPPORT_APIC
   PLUG_load_plugin(ioapic, PLUGTYPE_STANDARD);
@@ -336,13 +348,21 @@ void bx_devices_c::init(BX_MEM_C *newmem)
   DEV_cmos_set_reg(0x34, (Bit8u) (extended_memory_in_64k & 0xff));
   DEV_cmos_set_reg(0x35, (Bit8u) ((extended_memory_in_64k >> 8) & 0xff));
 
-  Bit64u memory_above_4gb = (mem->get_memory_len() > BX_CONST64(0x100000000)) ?
-                            (mem->get_memory_len() - BX_CONST64(0x100000000)) : 0;
-  if (memory_above_4gb) {
-    DEV_cmos_set_reg(0x5b, (Bit8u)(memory_above_4gb >> 16));
-    DEV_cmos_set_reg(0x5c, (Bit8u)(memory_above_4gb >> 24));
-    DEV_cmos_set_reg(0x5d, memory_above_4gb >> 32);
-  }
+  // Report memory above 4GB via the QEMU-compatible CMOS extension at 0x5b-0x5d.
+  // Legacy rombios uses these registers to construct the E820 entry for RAM above 4GB.
+  //
+  // Important: for configurations that reserve a 3GB-4GB PCI MMIO hole, RAM above 3GB
+  // is remapped above 4GB, so the amount of RAM above 4GB is (total_ram - 3GB), not
+  // merely (total_ram - 4GB).
+  Bit64u memory_len = mem->get_memory_len();
+  Bit64u memory_above_4gb = (memory_len > BX_CONST64(0xC0000000)) ?
+                            (memory_len - BX_CONST64(0xC0000000)) : 0;
+
+  // Stored in units of 64KB.
+  Bit64u memory_above_4gb_in_64k = (memory_above_4gb >> 16);
+  DEV_cmos_set_reg(0x5b, (Bit8u)(memory_above_4gb_in_64k & 0xff));
+  DEV_cmos_set_reg(0x5c, (Bit8u)((memory_above_4gb_in_64k >> 8) & 0xff));
+  DEV_cmos_set_reg(0x5d, (Bit8u)((memory_above_4gb_in_64k >> 16) & 0xff));
 
   options = SIM->get_param_string(BXPN_ROM_OPTIONS)->getptr();
   argc = bx_split_option_list("ROM image options", options, argv, 16);
@@ -354,6 +374,27 @@ void bx_devices_c::init(BX_MEM_C *newmem)
     }
     free(argv[i]);
     argv[i] = NULL;
+  }
+
+  // generate CMOS values for boot sequence if not using a CMOS image
+  if (!SIM->get_param_bool(BXPN_CMOSIMAGE_ENABLED)->get()) {
+    // Set the "non-extended" boot device (first floppy or first hard disk).
+    if (SIM->get_param_enum(BXPN_BOOTDRIVE1)->get() != BX_BOOT_FLOPPYA) {
+      // system boot sequence C:, A:
+      DEV_cmos_set_reg(0x2d, DEV_cmos_get_reg(0x2d) & 0xdf);
+    } else { // 'a'
+      // system boot sequence A:, C:
+      DEV_cmos_set_reg(0x2d, DEV_cmos_get_reg(0x2d) | 0x20);
+    }
+
+    // Set the "extended" boot sequence, bytes 0x38 and 0x3D (needed for cdrom booting)
+    BX_INFO(("Using boot sequence %s, %s, %s",
+             SIM->get_param_enum(BXPN_BOOTDRIVE1)->get_selected(),
+             SIM->get_param_enum(BXPN_BOOTDRIVE2)->get_selected(),
+             SIM->get_param_enum(BXPN_BOOTDRIVE3)->get_selected()));
+    DEV_cmos_set_reg(0x3d, SIM->get_param_enum(BXPN_BOOTDRIVE1)->get() |
+                           (SIM->get_param_enum(BXPN_BOOTDRIVE2)->get() << 4));
+
   }
 
   if (timer_handle != BX_NULL_TIMER_HANDLE) {
