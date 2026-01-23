@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2025  The Bochs Project
+//  Copyright (C) 2025-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -346,6 +346,7 @@ void bx_geforce_c::svga_init_members()
   BX_GEFORCE_THIS crtc_raster_pos = 0;
   BX_GEFORCE_THIS crtc_cursor_offset = 0;
   BX_GEFORCE_THIS crtc_cursor_config = 0;
+  BX_GEFORCE_THIS crtc_gpio_ext = 0;
   BX_GEFORCE_THIS ramdac_cu_start_pos = 0;
   BX_GEFORCE_THIS ramdac_vpll = 0;
   BX_GEFORCE_THIS ramdac_vpll_b = 0;
@@ -457,8 +458,13 @@ void bx_geforce_c::register_state(void)
 
 void bx_geforce_c::after_restore_state(void)
 {
-  bx_pci_device_c::after_restore_pci_state(geforce_mem_read_handler);
-  BX_GEFORCE_THIS bx_vgacore_c::after_restore_state();
+  bx_pci_device_c::after_restore_pci_state();
+  if (BX_GEFORCE_THIS crtc.reg[0x28] == 0x00) {
+    BX_GEFORCE_THIS bx_vgacore_c::after_restore_state();
+  } else {
+    BX_GEFORCE_THIS svga_needs_update_mode = 1;
+    BX_GEFORCE_THIS update();
+  }
 }
 
 void bx_geforce_c::redraw_area(unsigned x0, unsigned y0,
@@ -608,7 +614,7 @@ Bit8u bx_geforce_c::mem_read(bx_phy_address addr)
 {
   if (BX_GEFORCE_THIS pci_rom_size > 0) {
     Bit32u mask = (BX_GEFORCE_THIS pci_rom_size - 1);
-    if (((Bit32u)addr & ~mask) == BX_GEFORCE_THIS pci_rom_address) {
+    if (((Bit32u)addr & ~mask) == BX_GEFORCE_THIS pci_bar[PCI_ROM_SLOT].addr) {
       if (BX_GEFORCE_THIS pci_conf[0x30] & 0x01) {
         if (BX_GEFORCE_THIS pci_conf[0x50] == 0x00)
           return BX_GEFORCE_THIS pci_rom[addr & mask];
@@ -7146,6 +7152,10 @@ Bit32u bx_geforce_c::register_read32(Bit32u address)
     value = BX_GEFORCE_THIS crtc_cursor_offset;
   } else if (address == 0x600810) {
     value = BX_GEFORCE_THIS crtc_cursor_config;
+  } else if (address == 0x60081c) {
+    value = BX_GEFORCE_THIS crtc_gpio_ext;
+    if (BX_GEFORCE_THIS card_type == 0x35)
+      value |= 0x04000000;
   } else if (address == 0x600868) {
     Bit64u display_usec =
       bx_virt_timer.time_usec(BX_GEFORCE_THIS vsync_realtime) - BX_GEFORCE_THIS s.display_start_usec;
@@ -7411,6 +7421,8 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
       (BX_GEFORCE_THIS card_type >= 0x40);
     BX_GEFORCE_THIS hw_cursor.size = value & 0x00010000 ? 64 : 32;
     BX_GEFORCE_THIS hw_cursor.bpp32 = value & 0x00001000;
+  } else if (address == 0x60081c) {
+    BX_GEFORCE_THIS crtc_gpio_ext = value;
   } else if ((address >= 0x601300 && address < 0x601400) ||
              (address >= 0x603300 && address < 0x603400)) {
     register_write8(address, value);
@@ -7501,9 +7513,8 @@ void bx_geforce_c::svga_init_pcihandlers(void)
       BX_GEFORCE_THIS pci_conf[0x18] = 0x08;
     BX_GEFORCE_THIS init_bar_mem(2, BX_GEFORCE_THIS bar2_size, geforce_mem_read_handler, geforce_mem_write_handler);
   }
-  BX_GEFORCE_THIS pci_rom_address = 0;
-  BX_GEFORCE_THIS pci_rom_read_handler = geforce_mem_read_handler;
-  BX_GEFORCE_THIS load_pci_rom(SIM->get_param_string(BXPN_VGA_ROM_PATH)->getptr());
+  BX_GEFORCE_THIS load_pci_rom(SIM->get_param_string(BXPN_VGA_ROM_PATH)->getptr(),
+                               geforce_mem_read_handler);
 
   BX_GEFORCE_THIS pci_conf[0x2c] = 0x7D;
   BX_GEFORCE_THIS pci_conf[0x2d] = 0x10;
