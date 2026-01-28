@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2002-2025  The Bochs Project
+//  Copyright (C) 2002-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -227,10 +227,10 @@ extern "C" {
 #define DEV_pci_get_slot_from_dev(a) bx_devices.pci_get_slot_from_dev(a)
 #define DEV_pci_get_confAddr() bx_devices.pci_get_confAddr()
 #define DEV_pci_set_irq(a,b,c) bx_devices.pluginPci2IsaBridge->pci_set_irq(a,b,c)
-#define DEV_pci_set_base_mem(a,b,c,d,e,f) \
-  (bx_devices.pci_set_base_mem(a,b,c,d,e,f))
-#define DEV_pci_set_base_io(a,b,c,d,e,f,g,h) \
-  (bx_devices.pci_set_base_io(a,b,c,d,e,f,g,h))
+#define DEV_pci_set_base_mem(a,b,c,d,e,f,g) \
+  (bx_devices.pci_set_base_mem(a,b,c,d,e,f,g))
+#define DEV_pci_set_base_io(a,b,c,d,e,f,g,h,i) \
+  (bx_devices.pci_set_base_io(a,b,c,d,e,f,g,h,i))
 #define DEV_ide_bmdma_present() bx_devices.pluginPciIdeController->bmdma_present()
 #define DEV_ide_bmdma_set_irq(a) bx_devices.pluginPciIdeController->bmdma_set_irq(a)
 #define DEV_ide_bmdma_start_transfer(a) \
@@ -492,6 +492,7 @@ PLUGIN_ENTRY_FOR_IMG_MODULE(vmware3);
 PLUGIN_ENTRY_FOR_IMG_MODULE(vmware4);
 PLUGIN_ENTRY_FOR_IMG_MODULE(vbox);
 PLUGIN_ENTRY_FOR_IMG_MODULE(vpc);
+PLUGIN_ENTRY_FOR_IMG_MODULE(vhdx);
 PLUGIN_ENTRY_FOR_IMG_MODULE(vvfat);
 
 #endif

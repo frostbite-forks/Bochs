@@ -1,6 +1,6 @@
 Changes after 3.0:
 
-  This CHANGES file updated with commits merged till 27 Dec 2025, please refer to git log for more recent updates
+  This CHANGES file updated with commits merged till 24 Jan 2026, please refer to git log for more recent updates
 
 Detailed change log :
 
@@ -34,15 +34,14 @@ Detailed change log :
 - Config interface
   - On Windows make sure file name parameters use backslash as separator
   - Removed backward compatibility mode for USB device options
-  - Increased maximum host memory size to 8192 MB (was 2048 MB)
 
 - Memory
+  - Increased maximum host memory size to 8192 MB (was 2048 MB)
   - PCI hole support for >3GB RAM (NEW)
     Added guest physical address translation for systems with more than 3GB RAM.
     RAM from 3GB-4GB is remapped above 4GB to make room for PCI MMIO space.
     The bx_translate_gpa_to_linear() helper handles the remapping transparently.
     Works correctly with 2GB, 4GB, 8GB, 12GB, 16GB, and larger RAM configurations.
-
   - Added support for overlapping r/o memory handlers (used for PCI ROM)
   - Added support for mapping PCI ROM to expansion ROM space
 
@@ -70,6 +69,7 @@ Detailed change log :
     - Added advanced PCI option "altdevmap" to make real i440FX BIOS work
     - Ignore writes to ROM adddress if no ROM present
     - PCI IDE always provides 2 IDE channels (override settings if necessary)
+    - PCI BAR handling now depends on PCI command register bits IOAE and MAE
   - PCI (i440BX AGP)
     - AGP aperture access now correctly implemented
     - Fixed BCTRL and NBXCFG register
@@ -125,6 +125,9 @@ Detailed change log :
       - Real hardware does not set the CHANGE DISK bit at reset
       - Fix the `Illegal size for FIFO` error. Zero is a legal size on input, which translate to a size of 1.
       - Fixed the `DUMP_REGISTERS` command to show the EOT value.
+    - Added advanced PCI option 'nofdc'
+      - If PCI is enabled, the 'nofdc' option disables the FDC if no floppy drive is configured
+      - Enable first floppy drive by default only if Bochs is not compiled with PCI
   - Networking
     - E1000: Added loopback mode for diagnostics
   - USB
@@ -142,6 +145,8 @@ Detailed change log :
       - Added an amplitude table for the volume setup (using factor 1.5 between values).
       - Set default volume setting to 8.
       - Added runtime option to change the volume.
+  - Disk images
+    - VHDX disk image support added
 
 - GUI and display libraries
   - In gui console mode don't send key events to the emulator

@@ -28,7 +28,6 @@
 #include "bochs.h"
 #include "plugin.h"
 #include "param_names.h"
-#include "pc_system.h"
 #include "memory/memory-bochs.h"
 #include "gui/siminterface.h"
 #include "gui/gui.h"
@@ -137,7 +136,7 @@ enum {
   BX_PCI_BAR_TYPE_IO   = 2
 };
 
-#define PCI_ROM_SLOT 6
+#define PCI_ROM_BAR 6
 
 typedef struct {
   Bit8u  type;
@@ -159,7 +158,7 @@ typedef struct {
 
 class BOCHSAPI bx_pci_device_c : public bx_devmodel_c {
 public:
-  bx_pci_device_c(): pci_rom(NULL), pci_rom_size(0) {
+  bx_pci_device_c(): pci_rom(NULL) {
     for (int i = 0; i < 7; i++) memset(&pci_bar[i], 0, sizeof(bx_pci_bar_t));
   }
   virtual ~bx_pci_device_c() {
@@ -188,7 +187,6 @@ protected:
   Bit8u pci_conf[256];
   bx_pci_bar_t pci_bar[7];
   Bit8u  *pci_rom;
-  Bit32u pci_rom_size;
 };
 #endif
 
@@ -451,10 +449,10 @@ public:
   bool register_pci_handlers(bx_pci_device_c *device, Bit8u *devfunc,
                              const char *name, const char *descr, Bit8u bus = 0);
   bool pci_set_base_mem(void *this_ptr, memory_handler_t f1, memory_handler_t f2,
-                        Bit32u *addr, Bit8u *pci_conf, unsigned size);
+                        Bit32u *addr, Bit8u *pci_conf, unsigned size, bool mae);
   bool pci_set_base_io(void *this_ptr, bx_read_handler_t f1, bx_write_handler_t f2,
                        Bit32u *addr, Bit8u *pci_conf, unsigned size,
-                       const Bit8u *iomask, const char *name);
+                       const Bit8u *iomask, const char *name, bool ioae);
 #endif
   bool is_agp_present();
 

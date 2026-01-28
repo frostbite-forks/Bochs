@@ -450,9 +450,86 @@ void bx_geforce_c::register_state(void)
   new bx_shadow_num_c(list, "bank_base0", &BX_GEFORCE_THIS bank_base[0], BASE_HEX);
   new bx_shadow_num_c(list, "bank_base1", &BX_GEFORCE_THIS bank_base[1], BASE_HEX);
   bx_list_c *cursor = new bx_list_c(list, "hw_cursor");
+  BXRS_PARAM_BOOL(cursor, enabled, BX_GEFORCE_THIS hw_cursor.enabled);
+  BXRS_PARAM_BOOL(cursor, bpp32, BX_GEFORCE_THIS hw_cursor.bpp32);
+  BXRS_PARAM_BOOL(cursor, vram, BX_GEFORCE_THIS hw_cursor.vram);
   new bx_shadow_num_c(cursor, "x", &BX_GEFORCE_THIS hw_cursor.x, BASE_HEX);
   new bx_shadow_num_c(cursor, "y", &BX_GEFORCE_THIS hw_cursor.y, BASE_HEX);
   new bx_shadow_num_c(cursor, "size", &BX_GEFORCE_THIS hw_cursor.size, BASE_HEX);
+  new bx_shadow_num_c(cursor, "offset", &BX_GEFORCE_THIS hw_cursor.offset, BASE_HEX);
+  BXRS_PARAM_BOOL(list, mc_soft_intr, BX_GEFORCE_THIS mc_soft_intr);
+  new bx_shadow_num_c(list, "mc_intr_en", &BX_GEFORCE_THIS mc_intr_en, BASE_HEX);
+  new bx_shadow_num_c(list, "mc_enable", &BX_GEFORCE_THIS mc_enable, BASE_HEX);
+  new bx_shadow_num_c(list, "bus_intr", &BX_GEFORCE_THIS bus_intr, BASE_HEX);
+  new bx_shadow_num_c(list, "bus_intr_en", &BX_GEFORCE_THIS bus_intr_en, BASE_HEX);
+  BXRS_PARAM_BOOL(list, fifo_wait, BX_GEFORCE_THIS fifo_wait);
+  BXRS_PARAM_BOOL(list, fifo_wait_soft, BX_GEFORCE_THIS fifo_wait_soft);
+  BXRS_PARAM_BOOL(list, fifo_wait_notify, BX_GEFORCE_THIS fifo_wait_notify);
+  BXRS_PARAM_BOOL(list, fifo_wait_flip, BX_GEFORCE_THIS fifo_wait_flip);
+  BXRS_PARAM_BOOL(list, fifo_wait_acquire, BX_GEFORCE_THIS fifo_wait_acquire);
+  new bx_shadow_num_c(list, "fifo_intr", &BX_GEFORCE_THIS fifo_intr, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_intr_en", &BX_GEFORCE_THIS fifo_intr_en, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_ramht", &BX_GEFORCE_THIS fifo_ramht, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_ramfc", &BX_GEFORCE_THIS fifo_ramfc, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_ramro", &BX_GEFORCE_THIS fifo_ramro, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_mode", &BX_GEFORCE_THIS fifo_mode, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_push0", &BX_GEFORCE_THIS fifo_cache1_push0, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_push1", &BX_GEFORCE_THIS fifo_cache1_push1, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_put", &BX_GEFORCE_THIS fifo_cache1_put, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_dma_push", &BX_GEFORCE_THIS fifo_cache1_dma_push, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_dma_instance", &BX_GEFORCE_THIS fifo_cache1_dma_instance, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_dma_put", &BX_GEFORCE_THIS fifo_cache1_dma_put, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_dma_get", &BX_GEFORCE_THIS fifo_cache1_dma_get, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_ref_cnt", &BX_GEFORCE_THIS fifo_cache1_ref_cnt, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_pull0", &BX_GEFORCE_THIS fifo_cache1_pull0, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_semaphore", &BX_GEFORCE_THIS fifo_cache1_semaphore, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_cache1_get", &BX_GEFORCE_THIS fifo_cache1_get, BASE_HEX);
+  new bx_shadow_num_c(list, "fifo_grctx_instance", &BX_GEFORCE_THIS fifo_grctx_instance, BASE_HEX);
+  new bx_shadow_data_c(list, "fifo_cache1_method", (Bit8u*)BX_GEFORCE_THIS fifo_cache1_method, GEFORCE_CACHE1_SIZE << 2, 1);
+  new bx_shadow_data_c(list, "fifo_cache1_data", (Bit8u*)BX_GEFORCE_THIS fifo_cache1_data, GEFORCE_CACHE1_SIZE << 2, 1);
+  new bx_shadow_num_c(list, "rma_addr", &BX_GEFORCE_THIS rma_addr, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_intr", &BX_GEFORCE_THIS timer_intr, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_intr_en", &BX_GEFORCE_THIS timer_intr_en, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_num", &BX_GEFORCE_THIS timer_num, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_den", &BX_GEFORCE_THIS timer_den, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_inittime1", &BX_GEFORCE_THIS timer_inittime1, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_inittime2", &BX_GEFORCE_THIS timer_inittime2, BASE_HEX);
+  new bx_shadow_num_c(list, "timer_alarm", &BX_GEFORCE_THIS timer_alarm, BASE_HEX);
+  new bx_shadow_num_c(list, "straps0_primary", &BX_GEFORCE_THIS straps0_primary, BASE_HEX);
+  new bx_shadow_num_c(list, "straps0_primary_original", &BX_GEFORCE_THIS straps0_primary_original, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_intr", &BX_GEFORCE_THIS graph_intr, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_nsource", &BX_GEFORCE_THIS graph_nsource, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_intr_en", &BX_GEFORCE_THIS graph_intr_en, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_ctx_switch1", &BX_GEFORCE_THIS graph_ctx_switch1, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_ctx_switch2", &BX_GEFORCE_THIS graph_ctx_switch2, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_ctx_switch4", &BX_GEFORCE_THIS graph_ctx_switch4, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_ctxctl_cur", &BX_GEFORCE_THIS graph_ctxctl_cur, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_status", &BX_GEFORCE_THIS graph_status, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_trapped_addr", &BX_GEFORCE_THIS graph_trapped_addr, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_trapped_data", &BX_GEFORCE_THIS graph_trapped_data, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_flip_read", &BX_GEFORCE_THIS graph_flip_read, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_flip_write", &BX_GEFORCE_THIS graph_flip_write, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_flip_modulo", &BX_GEFORCE_THIS graph_flip_modulo, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_notify", &BX_GEFORCE_THIS graph_notify, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_fifo", &BX_GEFORCE_THIS graph_fifo, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_bpixel", &BX_GEFORCE_THIS graph_bpixel, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_channel_ctx_table", &BX_GEFORCE_THIS graph_channel_ctx_table, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_offset0", &BX_GEFORCE_THIS graph_offset0, BASE_HEX);
+  new bx_shadow_num_c(list, "graph_pitch0", &BX_GEFORCE_THIS graph_pitch0, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_intr", &BX_GEFORCE_THIS crtc_intr, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_intr_en", &BX_GEFORCE_THIS crtc_intr_en, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_start", &BX_GEFORCE_THIS crtc_start, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_config", &BX_GEFORCE_THIS crtc_config, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_raster_pos", &BX_GEFORCE_THIS crtc_raster_pos, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_cursor_offset", &BX_GEFORCE_THIS crtc_cursor_offset, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_cursor_config", &BX_GEFORCE_THIS crtc_cursor_config, BASE_HEX);
+  new bx_shadow_num_c(list, "crtc_gpio_ext", &BX_GEFORCE_THIS crtc_gpio_ext, BASE_HEX);
+  new bx_shadow_num_c(list, "ramdac_cu_start_pos", &BX_GEFORCE_THIS ramdac_cu_start_pos, BASE_HEX);
+  new bx_shadow_num_c(list, "ramdac_vpll", &BX_GEFORCE_THIS ramdac_vpll, BASE_HEX);
+  new bx_shadow_num_c(list, "ramdac_vpll_b", &BX_GEFORCE_THIS ramdac_vpll_b, BASE_HEX);
+  new bx_shadow_num_c(list, "ramdac_pll_select", &BX_GEFORCE_THIS ramdac_pll_select, BASE_HEX);
+  new bx_shadow_num_c(list, "ramdac_general_control", &BX_GEFORCE_THIS ramdac_general_control, BASE_HEX);
+  new bx_shadow_data_c(list, "chs", (Bit8u*)BX_GEFORCE_THIS chs, sizeof(chs));
   register_pci_state(list);
 }
 
@@ -612,9 +689,9 @@ bool bx_geforce_c::geforce_mem_read_handler(bx_phy_address addr, unsigned len,
 
 Bit8u bx_geforce_c::mem_read(bx_phy_address addr)
 {
-  if (BX_GEFORCE_THIS pci_rom_size > 0) {
-    Bit32u mask = (BX_GEFORCE_THIS pci_rom_size - 1);
-    if (((Bit32u)addr & ~mask) == BX_GEFORCE_THIS pci_bar[PCI_ROM_SLOT].addr) {
+  if (BX_GEFORCE_THIS pci_bar[PCI_ROM_BAR].size > 0) {
+    Bit32u mask = (BX_GEFORCE_THIS pci_bar[PCI_ROM_BAR].size - 1);
+    if (((Bit32u)addr & ~mask) == BX_GEFORCE_THIS pci_bar[PCI_ROM_BAR].addr) {
       if (BX_GEFORCE_THIS pci_conf[0x30] & 0x01) {
         if (BX_GEFORCE_THIS pci_conf[0x50] == 0x00)
           return BX_GEFORCE_THIS pci_rom[addr & mask];
@@ -3055,9 +3132,10 @@ void bx_geforce_c::d3d_clear_surface(gf_channel* ch)
   }
 }
 
-float edge_function(float v0[4], float v1[4], float v2[4])
+double edge_function(float v0[4], float v1[4], float v2[4])
 {
-  return (v1[0] - v0[0]) * (v2[1] - v0[1]) - (v1[1] - v0[1]) * (v2[0] - v0[0]);
+  return ((double)v1[0] - v0[0]) * ((double)v2[1] - v0[1]) -
+         ((double)v1[1] - v0[1]) * ((double)v2[0] - v0[0]);
 }
 
 float uint32_as_float(Bit32u val)
@@ -4683,10 +4761,10 @@ void bx_geforce_c::d3d_triangle(gf_channel* ch, Bit32u base)
   }
   bool clipped[3];
   Bit32u clip_count = 0;
-  float zscale = BX_GEFORCE_THIS card_type <= 0x20 ?
-    1.0f / ch->d3d_viewport_scale[2] : 1.0f;
+  float clip_thresh = BX_GEFORCE_THIS card_type <= 0x20 ?
+    ch->d3d_viewport_offset[2] - ch->d3d_clip_min : 1.0f;
   for (int v = 0; v < 3; v++) {
-    clipped[v] = vs_out[v][0][2] * zscale < -vs_out[v][0][3];
+    clipped[v] = vs_out[v][0][2] < -vs_out[v][0][3] * clip_thresh;
     if (clipped[v])
       clip_count++;
   }
@@ -4700,8 +4778,8 @@ void bx_geforce_c::d3d_triangle(gf_channel* ch, Bit32u base)
     for (int v0 = 0; v0 < 3; v0++) {
       Bit32u v1 = (v0 + 1) % 3;
       if (clipped[v0] != clipped[v1]) {
-        float k = vs_out[v1][0][2] * zscale + vs_out[v1][0][3];
-        float t = k / (k - vs_out[v0][0][2] * zscale - vs_out[v0][0][3]);
+        float k = vs_out[v1][0][2] + vs_out[v1][0][3] * clip_thresh;
+        float t = k / (k - vs_out[v0][0][2] - vs_out[v0][0][3] * clip_thresh);
         float omt = 1.0f - t;
         for (int a = 0; a < 16; a++) {
           for (int comp_index = 0; comp_index < 4; comp_index++) {
@@ -4766,9 +4844,9 @@ void bx_geforce_c::d3d_triangle_clipped(gf_channel* ch, float v0[16][4], float v
   d3d_clip_to_screen(ch, v0[0], sp0);
   d3d_clip_to_screen(ch, v1[0], sp1);
   d3d_clip_to_screen(ch, v2[0], sp2);
-  float b012 = edge_function(sp0, sp1, sp2);
+  double b012 = edge_function(sp0, sp1, sp2);
   bool front_face_cw = ch->d3d_front_face == 0x00000900;
-  bool clockwise = b012 > 0.0f;
+  bool clockwise = b012 > 0.0;
   bool front_face = (clockwise != ch->d3d_triangle_flip) == front_face_cw;
   if (ch->d3d_cull_face_enable) {
     if ((ch->d3d_cull_face == 0x00000405 && !front_face) ||
@@ -4828,39 +4906,42 @@ void bx_geforce_c::d3d_triangle_clipped(gf_channel* ch, float v0[16][4], float v
         ps_in[i + 4][comp_index] = v0[ch->d3d_attrib_out_tex_coord[i]][comp_index];
   float xy[2];
   xy[1] = draw_y1 + 0.5f;
-  float b012inv = 1.0f / b012;
+  double b012inv = 1.0 / b012;
   bool stencil_test_enable = ch->d3d_stencil_test_enable && ch->d3d_depth_bytes != 2;
   bool zstencil_enable = ch->d3d_depth_test_enable || stencil_test_enable;
   for (Bit16u y = 0; y < draw_height; y++, xy[1]++) {
     xy[0] = draw_x1 + 0.5f;
     for (Bit16u x = 0; x < draw_width; x++, xy[0]++) {
-      float b0 = edge_function(sp1, sp2, xy);
+      double b0 = edge_function(sp1, sp2, xy);
       if (clockwise) {
-        if (b0 < 0.0f)
+        if (b0 < 0.0)
           continue;
       } else {
-        if (b0 > 0.0f)
+        if (b0 > 0.0)
           continue;
       }
-      float b1 = edge_function(sp2, sp0, xy);
+      double b1 = edge_function(sp2, sp0, xy);
       if (clockwise) {
-        if (b1 < 0.0f)
+        if (b1 < 0.0)
           continue;
       } else {
-        if (b1 > 0.0f)
+        if (b1 > 0.0)
           continue;
       }
-      float b2 = edge_function(sp0, sp1, xy);
+      double b2 = edge_function(sp0, sp1, xy);
       if (clockwise) {
-        if (b2 < 0.0f)
+        if (b2 < 0.0)
           continue;
       } else {
-        if (b2 > 0.0f)
+        if (b2 > 0.0)
           continue;
       }
       b0 *= b012inv;
       b1 *= b012inv;
       b2 *= b012inv;
+      float z = sp0[2] * b0 + sp1[2] * b1 + sp2[2] * b2;
+      if (z > ch->d3d_clip_max)
+        continue;
       Bit32u z_new;
       Bit8u stencil = 0x00;
       if (zstencil_enable) {
@@ -4874,7 +4955,6 @@ void bx_geforce_c::d3d_triangle_clipped(gf_channel* ch, float v0[16][4], float v
         }
         bool depth_test_pass;
         if (ch->d3d_depth_test_enable) {
-          float z = sp0[2] * b0 + sp1[2] * b1 + sp2[2] * b2;
           if (BX_GEFORCE_THIS card_type <= 0x20)
             z_new = z;
           else if (ch->d3d_depth_bytes == 2)
