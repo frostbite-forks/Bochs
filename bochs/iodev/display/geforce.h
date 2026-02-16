@@ -480,6 +480,7 @@ private:
   BX_GEFORCE_SMF void update_fifo_wait();
   BX_GEFORCE_SMF void fifo_process();
   BX_GEFORCE_SMF void fifo_process(Bit32u chid);
+  BX_GEFORCE_SMF void fifo_wake();
   BX_GEFORCE_SMF int execute_command(Bit32u chid, Bit32u subc, Bit32u method, Bit32u param);
 
   BX_GEFORCE_SMF void update_color_bytes_s2d(gf_channel* ch);
@@ -545,6 +546,11 @@ private:
     Bit8u index;
     Bit8u reg[GEFORCE_CRTC_MAX+1];
   } crtc; // 0x3b4-5/0x3d4-5
+
+  BX_THREAD_VAR(fifo_thread_var);
+  BX_MUTEX(fifo_mutex);
+  bx_thread_sem_t fifo_wakeup;
+  bool fifo_thread_keep_alive;
 
   bool mc_soft_intr;
   Bit32u mc_intr_en;
@@ -666,6 +672,10 @@ private:
   BX_GEFORCE_SMF void svga_init_pcihandlers(void);
 
   void vertical_timer();
+
+  void start_fifo_thread(void);
+  void stop_fifo_thread(void);
+  static BX_THREAD_FUNC(fifo_thread, this_ptr);
 
   BX_GEFORCE_SMF bool geforce_mem_read_handler(bx_phy_address addr, unsigned len, void *data, void *param);
   BX_GEFORCE_SMF bool geforce_mem_write_handler(bx_phy_address addr, unsigned len, void *data, void *param);

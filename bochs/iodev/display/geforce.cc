@@ -30,6 +30,7 @@
 #include "bitblt.h"
 #include "ddc.h"
 #include "pxextract.h"
+#include "bxthread.h"
 #include "geforce.h"
 #include "virt_timer.h"
 
@@ -136,11 +137,12 @@ PLUGIN_ENTRY_FOR_MODULE(geforce)
 
 bx_geforce_c::bx_geforce_c() : bx_vgacore_c()
 {
-  // nothing else to do
+  BX_GEFORCE_THIS fifo_thread_keep_alive = false;
 }
 
 bx_geforce_c::~bx_geforce_c()
 {
+  stop_fifo_thread();
   SIM->get_bochs_root()->remove("geforce");
   BX_DEBUG(("Exit"));
 }
@@ -196,6 +198,9 @@ bool bx_geforce_c::init_vga_extension(void)
   // register device for the 'info device' command (calls debug_dump())
   bx_dbg_register_debug_info("geforce", this);
 #endif
+  if (!SIM->get_param_bool(BXPN_RESTORE_FLAG)->get()) {
+    start_fifo_thread();
+  }
   return 1;
 }
 
@@ -508,6 +513,7 @@ void bx_geforce_c::after_restore_state(void)
     BX_GEFORCE_THIS svga_needs_update_mode = 1;
     BX_GEFORCE_THIS update();
   }
+  start_fifo_thread();
 }
 
 void bx_geforce_c::redraw_area(unsigned x0, unsigned y0,
@@ -586,10 +592,49 @@ void bx_geforce_c::vertical_timer()
     update_irq_level();
   }
   if (BX_GEFORCE_THIS fifo_wait_acquire) {
+    BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
     BX_GEFORCE_THIS fifo_wait_acquire = false;
     update_fifo_wait();
-    fifo_process();
+    BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+    fifo_wake();
   }
+}
+
+BX_THREAD_FUNC(bx_geforce_c::fifo_thread, this_ptr)
+{
+  bx_geforce_c *self = (bx_geforce_c*)this_ptr;
+  while (self->fifo_thread_keep_alive) {
+    bx_wait_sem(&self->fifo_wakeup);
+    if (!self->fifo_thread_keep_alive) break;
+    BX_LOCK(self->fifo_mutex);
+    self->fifo_process();
+    BX_UNLOCK(self->fifo_mutex);
+  }
+  BX_THREAD_EXIT;
+}
+
+void bx_geforce_c::start_fifo_thread(void)
+{
+  BX_GEFORCE_THIS fifo_thread_keep_alive = true;
+  BX_INIT_MUTEX(BX_GEFORCE_THIS fifo_mutex);
+  bx_create_sem(&BX_GEFORCE_THIS fifo_wakeup);
+  BX_THREAD_CREATE(fifo_thread, BX_GEFORCE_THIS_PTR, BX_GEFORCE_THIS fifo_thread_var);
+}
+
+void bx_geforce_c::stop_fifo_thread(void)
+{
+  if (BX_GEFORCE_THIS fifo_thread_keep_alive) {
+    BX_GEFORCE_THIS fifo_thread_keep_alive = false;
+    bx_set_sem(&BX_GEFORCE_THIS fifo_wakeup);
+    BX_THREAD_JOIN(BX_GEFORCE_THIS fifo_thread_var);
+    BX_FINI_MUTEX(BX_GEFORCE_THIS fifo_mutex);
+    bx_destroy_sem(&BX_GEFORCE_THIS fifo_wakeup);
+  }
+}
+
+void bx_geforce_c::fifo_wake()
+{
+  bx_set_sem(&BX_GEFORCE_THIS fifo_wakeup);
 }
 
 bool bx_geforce_c::geforce_mem_read_handler(bx_phy_address addr, unsigned len,
@@ -7320,11 +7365,11 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
     bool process = (BX_GEFORCE_THIS fifo_mode | value) != BX_GEFORCE_THIS fifo_mode;
     BX_GEFORCE_THIS fifo_mode = value;
     if (process)
-      fifo_process();
+      fifo_wake();
   } else if (address == 0x3200) {
     BX_GEFORCE_THIS fifo_cache1_push0 = value;
     if ((BX_GEFORCE_THIS fifo_cache1_push0 & 1) != 0)
-      fifo_process();
+      fifo_wake();
   } else if (address == 0x3204) {
     BX_GEFORCE_THIS fifo_cache1_push1 = value;
   } else if (address == 0x3210) {
@@ -7342,7 +7387,7 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
   } else if (address == 0x3250) {
     BX_GEFORCE_THIS fifo_cache1_pull0 = value;
     if ((BX_GEFORCE_THIS fifo_cache1_pull0 & 1) != 0)
-      fifo_process();
+      fifo_wake();
   } else if (address == 0x3270) {
     BX_GEFORCE_THIS fifo_cache1_get = value & (GEFORCE_CACHE1_SIZE * 4 - 1);
     if (BX_GEFORCE_THIS fifo_cache1_get != BX_GEFORCE_THIS fifo_cache1_put) {
@@ -7351,9 +7396,11 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
       BX_GEFORCE_THIS fifo_intr &= ~0x00000001;
       BX_GEFORCE_THIS fifo_cache1_pull0 &= ~0x00000100;
       if (BX_GEFORCE_THIS fifo_wait_soft) {
+        BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
         BX_GEFORCE_THIS fifo_wait_soft = false;
         update_fifo_wait();
-        fifo_process();
+        BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+        fifo_wake();
       }
     }
     update_irq_level();
@@ -7390,9 +7437,11 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
     BX_GEFORCE_THIS graph_intr &= ~value;
     update_irq_level();
     if (BX_GEFORCE_THIS fifo_wait_notify && BX_GEFORCE_THIS graph_intr == 0) {
+      BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
       BX_GEFORCE_THIS fifo_wait_notify = false;
       update_fifo_wait();
-      fifo_process();
+      BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+      fifo_wake();
     }
   } else if (address == 0x400108) {
     BX_GEFORCE_THIS graph_nsource = value;
@@ -7422,9 +7471,11 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
       BX_GEFORCE_THIS graph_flip_read %= BX_GEFORCE_THIS graph_flip_modulo;
       if (BX_GEFORCE_THIS fifo_wait_flip &&
           BX_GEFORCE_THIS graph_flip_read != BX_GEFORCE_THIS graph_flip_write) {
+        BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
         BX_GEFORCE_THIS fifo_wait_flip = false;
         update_fifo_wait();
-        fifo_process();
+        BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+        fifo_wake();
       }
     }
   } else if (address == 0x400720) {
@@ -7516,7 +7567,7 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
           BX_GEFORCE_THIS fifo_cache1_dma_put = value;
         else
           ramfc_write32(chid, 0x0, value);
-        fifo_process(chid);
+        fifo_wake();
       }
     } else if (address >= 0x800000 && address < 0xA00000) {
       Bit32u subc = (address >> 13) & 7;
