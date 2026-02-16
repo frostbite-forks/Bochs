@@ -164,7 +164,7 @@ geforce.o: geforce.@CPP_SUFFIX@ ../iodev.h ../../bochs.h ../../config.h \
  ../../extplugin.h ../../param_names.h ../../pc_system.h \
  ../../bx_debug/debug.h ../../config.h ../../osdep.h \
  ../../memory/memory-bochs.h ../../gui/siminterface.h ../../gui/gui.h \
- vgacore.h bitblt.h ddc.h geforce.h ../virt_timer.h
+ vgacore.h bitblt.h ddc.h geforce.h ../virt_timer.h ../../bxthread.h
 vga.o: vga.@CPP_SUFFIX@ ../iodev.h ../../bochs.h ../../config.h ../../osdep.h \
  ../../gui/paramtree.h ../../logio.h ../../instrument/stubs/instrument.h \
  ../../misc/bswap.h ../../plugin.h ../../extplugin.h ../../param_names.h \
@@ -209,7 +209,7 @@ geforce.lo: geforce.@CPP_SUFFIX@ ../iodev.h ../../bochs.h ../../config.h \
  ../../extplugin.h ../../param_names.h ../../pc_system.h \
  ../../bx_debug/debug.h ../../config.h ../../osdep.h \
  ../../memory/memory-bochs.h ../../gui/siminterface.h ../../gui/gui.h \
- vgacore.h bitblt.h ddc.h geforce.h ../virt_timer.h
+ vgacore.h bitblt.h ddc.h geforce.h ../virt_timer.h ../../bxthread.h
 vga.lo: vga.@CPP_SUFFIX@ ../iodev.h ../../bochs.h ../../config.h ../../osdep.h \
  ../../gui/paramtree.h ../../logio.h ../../instrument/stubs/instrument.h \
  ../../misc/bswap.h ../../plugin.h ../../extplugin.h ../../param_names.h \
