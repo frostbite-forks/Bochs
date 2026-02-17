@@ -60,6 +60,11 @@
 
 static bx_geforce_c *theSvga = NULL;
 
+static BX_THREAD_VAR(fifo_thread_var);
+static BX_MUTEX(fifo_mutex);
+static bx_thread_sem_t fifo_wakeup;
+static bool fifo_thread_keep_alive = false;
+
 /* enumeration specifying which model of GeForce we are emulating */
 enum
 {
@@ -137,7 +142,7 @@ PLUGIN_ENTRY_FOR_MODULE(geforce)
 
 bx_geforce_c::bx_geforce_c() : bx_vgacore_c()
 {
-  BX_GEFORCE_THIS fifo_thread_keep_alive = false;
+  // nothing else to do
 }
 
 bx_geforce_c::~bx_geforce_c()
@@ -592,49 +597,49 @@ void bx_geforce_c::vertical_timer()
     update_irq_level();
   }
   if (BX_GEFORCE_THIS fifo_wait_acquire) {
-    BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
+    BX_LOCK(fifo_mutex);
     BX_GEFORCE_THIS fifo_wait_acquire = false;
     update_fifo_wait();
-    BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+    BX_UNLOCK(fifo_mutex);
     fifo_wake();
   }
 }
 
-BX_THREAD_FUNC(bx_geforce_c::fifo_thread, this_ptr)
+static BX_THREAD_FUNC(fifo_thread, this_ptr)
 {
-  bx_geforce_c *self = (bx_geforce_c*)this_ptr;
-  while (self->fifo_thread_keep_alive) {
-    bx_wait_sem(&self->fifo_wakeup);
-    if (!self->fifo_thread_keep_alive) break;
-    BX_LOCK(self->fifo_mutex);
-    self->fifo_process();
-    BX_UNLOCK(self->fifo_mutex);
+  UNUSED(this_ptr);
+  while (fifo_thread_keep_alive) {
+    bx_wait_sem(&fifo_wakeup);
+    if (!fifo_thread_keep_alive) break;
+    BX_LOCK(fifo_mutex);
+    theSvga->fifo_process();
+    BX_UNLOCK(fifo_mutex);
   }
   BX_THREAD_EXIT;
 }
 
 void bx_geforce_c::start_fifo_thread(void)
 {
-  BX_GEFORCE_THIS fifo_thread_keep_alive = true;
-  BX_INIT_MUTEX(BX_GEFORCE_THIS fifo_mutex);
-  bx_create_sem(&BX_GEFORCE_THIS fifo_wakeup);
-  BX_THREAD_CREATE(fifo_thread, BX_GEFORCE_THIS_PTR, BX_GEFORCE_THIS fifo_thread_var);
+  fifo_thread_keep_alive = true;
+  BX_INIT_MUTEX(fifo_mutex);
+  bx_create_sem(&fifo_wakeup);
+  BX_THREAD_CREATE(fifo_thread, this, fifo_thread_var);
 }
 
 void bx_geforce_c::stop_fifo_thread(void)
 {
-  if (BX_GEFORCE_THIS fifo_thread_keep_alive) {
-    BX_GEFORCE_THIS fifo_thread_keep_alive = false;
-    bx_set_sem(&BX_GEFORCE_THIS fifo_wakeup);
-    BX_THREAD_JOIN(BX_GEFORCE_THIS fifo_thread_var);
-    BX_FINI_MUTEX(BX_GEFORCE_THIS fifo_mutex);
-    bx_destroy_sem(&BX_GEFORCE_THIS fifo_wakeup);
+  if (fifo_thread_keep_alive) {
+    fifo_thread_keep_alive = false;
+    bx_set_sem(&fifo_wakeup);
+    BX_THREAD_JOIN(fifo_thread_var);
+    BX_FINI_MUTEX(fifo_mutex);
+    bx_destroy_sem(&fifo_wakeup);
   }
 }
 
 void bx_geforce_c::fifo_wake()
 {
-  bx_set_sem(&BX_GEFORCE_THIS fifo_wakeup);
+  bx_set_sem(&fifo_wakeup);
 }
 
 bool bx_geforce_c::geforce_mem_read_handler(bx_phy_address addr, unsigned len,
@@ -7396,10 +7401,10 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
       BX_GEFORCE_THIS fifo_intr &= ~0x00000001;
       BX_GEFORCE_THIS fifo_cache1_pull0 &= ~0x00000100;
       if (BX_GEFORCE_THIS fifo_wait_soft) {
-        BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
+        BX_LOCK(fifo_mutex);
         BX_GEFORCE_THIS fifo_wait_soft = false;
         update_fifo_wait();
-        BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+        BX_UNLOCK(fifo_mutex);
         fifo_wake();
       }
     }
@@ -7437,10 +7442,10 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
     BX_GEFORCE_THIS graph_intr &= ~value;
     update_irq_level();
     if (BX_GEFORCE_THIS fifo_wait_notify && BX_GEFORCE_THIS graph_intr == 0) {
-      BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
+      BX_LOCK(fifo_mutex);
       BX_GEFORCE_THIS fifo_wait_notify = false;
       update_fifo_wait();
-      BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+      BX_UNLOCK(fifo_mutex);
       fifo_wake();
     }
   } else if (address == 0x400108) {
@@ -7471,10 +7476,10 @@ void bx_geforce_c::register_write32(Bit32u address, Bit32u value)
       BX_GEFORCE_THIS graph_flip_read %= BX_GEFORCE_THIS graph_flip_modulo;
       if (BX_GEFORCE_THIS fifo_wait_flip &&
           BX_GEFORCE_THIS graph_flip_read != BX_GEFORCE_THIS graph_flip_write) {
-        BX_LOCK(BX_GEFORCE_THIS fifo_mutex);
+        BX_LOCK(fifo_mutex);
         BX_GEFORCE_THIS fifo_wait_flip = false;
         update_fifo_wait();
-        BX_UNLOCK(BX_GEFORCE_THIS fifo_mutex);
+        BX_UNLOCK(fifo_mutex);
         fifo_wake();
       }
     }
