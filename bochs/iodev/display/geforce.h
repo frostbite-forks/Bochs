@@ -383,6 +383,7 @@ public:
 
   virtual bool init_vga_extension(void);
   Bit16u get_crtc_vtotal();
+  BX_GEFORCE_SMF void fifo_process();
   virtual void get_crtc_params(bx_crtc_params_t* crtcp, Bit32u* vclock);
   virtual void reset(unsigned type);
   virtual void redraw_area(unsigned x0, unsigned y0,
@@ -478,7 +479,6 @@ private:
   BX_GEFORCE_SMF void ramht_lookup(Bit32u handle, Bit32u chid, Bit32u* object, Bit8u* engine);
 
   BX_GEFORCE_SMF void update_fifo_wait();
-  BX_GEFORCE_SMF void fifo_process();
   BX_GEFORCE_SMF void fifo_process(Bit32u chid);
   BX_GEFORCE_SMF void fifo_wake();
   BX_GEFORCE_SMF int execute_command(Bit32u chid, Bit32u subc, Bit32u method, Bit32u param);
