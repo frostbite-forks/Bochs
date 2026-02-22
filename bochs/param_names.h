@@ -155,6 +155,7 @@
 #define BXPN_SOUND_WAVEIN                "sound.lowlevel.wavein"
 #define BXPN_SOUND_MIDIOUT_DRV           "sound.lowlevel.midioutdrv"
 #define BXPN_SOUND_MIDIOUT               "sound.lowlevel.midiout"
+#define BXPN_SOUND_WAVEOUT_MAXLAG        "sound.lowlevel.maxlag"
 #define BXPN_SOUND_SPEAKER               "sound.speaker"
 #define BXPN_SOUND_SB16                  "sound.sb16"
 #define BXPN_SOUND_ES1370                "sound.es1370"
