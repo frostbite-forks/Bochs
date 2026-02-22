@@ -4521,6 +4521,15 @@ format sound: property=value.
     other choices described above. Overriding one or more settings with
     the specific driver parameter is possible.
    </para></listitem>
+
+   <listitem><para>
+    <option>maxlag</option>:
+    Maximum delay in milliseconds allowed for a sound packet waiting in the
+    output queue. Packets delayed longer than this value are discarded. This
+    prevents sound from becoming increasingly desynchronized when the emulation
+    speed drops temporarily (e.g. when opening the config dialog). A value of 0
+    (the default) disables this feature.
+   </para></listitem>
  </itemizedlist>
 See <xref linkend="using-sound"> for more information.
 </para>
