@@ -64,6 +64,7 @@ typedef struct _audio_buffer_t
     float *fdata;
   };
   bx_pcm_param_t param;
+  Bit64u timestamp_ms;
   struct _audio_buffer_t *next;
 } audio_buffer_t;
 
@@ -76,6 +77,7 @@ public:
   audio_buffer_t *get_buffer();
   void delete_buffer();
   void flush();
+  int discard_expired_buffers(Bit64u now_ms, Bit64u maxlag_ms);
 private:
   Bit8u format;
   audio_buffer_t *root;
@@ -114,12 +116,14 @@ public:
   bool mixer_running() {return mix_thread_start;}
 
   bx_audio_buffer_c *get_audio_buffer(int n) {return audio_buffers[n];}
+  Bit32u get_maxlag() {return maxlag;}
 
 protected:
   void start_resampler_thread(void);
   void start_mixer_thread(void);
   Bit32u resampler_common(audio_buffer_t *inbuffer, float **fbuffer);
 
+  Bit32u maxlag;
   bx_pcm_param_t real_pcm_param;
   bool res_thread_start;
   bool mix_thread_start;

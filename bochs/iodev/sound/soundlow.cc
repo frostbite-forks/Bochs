@@ -23,10 +23,29 @@
 #include "bochs.h"
 #include "plugin.h"
 #include "pc_system.h"
+#include "gui/siminterface.h"
+#include "param_names.h"
 
 #if BX_SUPPORT_SOUNDLOW
 
 #include "soundlow.h"
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <sys/time.h>
+#endif
+
+static Bit64u bx_get_wall_clock_ms()
+{
+#ifdef WIN32
+  return (Bit64u)GetTickCount();
+#else
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (Bit64u)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+#endif
+}
 
 #define LOG_THIS
 
@@ -55,6 +74,7 @@ audio_buffer_t* bx_audio_buffer_c::new_buffer(Bit32u size)
   }
   newbuffer->size = size;
   newbuffer->pos = 0;
+  newbuffer->timestamp_ms = bx_get_wall_clock_ms();
   newbuffer->next = NULL;
 
   if (root == NULL) {
@@ -94,6 +114,16 @@ void bx_audio_buffer_c::flush()
   while (root != NULL) {
     BX_MSLEEP(1);
   }
+}
+
+int bx_audio_buffer_c::discard_expired_buffers(Bit64u now_ms, Bit64u maxlag_ms)
+{
+  int discarded = 0;
+  while (root != NULL && (now_ms - root->timestamp_ms) > maxlag_ms) {
+    delete_buffer();
+    discarded++;
+  }
+  return discarded;
 }
 
 // convert to float format for resampler
@@ -207,6 +237,10 @@ BX_THREAD_FUNC(resampler_thread, indata)
   bx_soundlow_waveout_c *waveout = (bx_soundlow_waveout_c*)indata;
   while (waveout->resampler_running()) {
     BX_LOCK(resampler_mutex);
+    Bit32u maxlag = waveout->get_maxlag();
+    if (maxlag > 0) {
+      waveout->get_audio_buffer(0)->discard_expired_buffers(bx_get_wall_clock_ms(), maxlag);
+    }
     audio_buffer_t *curbuffer = waveout->get_audio_buffer(0)->get_buffer();
     BX_UNLOCK(resampler_mutex);
     if (curbuffer != NULL) {
@@ -228,6 +262,12 @@ BX_THREAD_FUNC(mixer_thread, indata)
   bx_soundlow_waveout_c *waveout = (bx_soundlow_waveout_c*)indata;
   Bit8u *mixbuffer = new Bit8u[BX_SOUNDLOW_WAVEPACKETSIZE];
   while (waveout->mixer_running()) {
+    Bit32u maxlag = waveout->get_maxlag();
+    if (maxlag > 0) {
+      BX_LOCK(mixer_mutex);
+      waveout->get_audio_buffer(1)->discard_expired_buffers(bx_get_wall_clock_ms(), maxlag);
+      BX_UNLOCK(mixer_mutex);
+    }
     len = waveout->get_packetsize();
     memset(mixbuffer, 0, len);
     if (waveout->mixer_common(mixbuffer, len)) {
@@ -250,6 +290,7 @@ bx_soundlow_waveout_c::bx_soundlow_waveout_c()
   audio_buffers[0] = new bx_audio_buffer_c(BUFTYPE_FLOAT);
   audio_buffers[1] = new bx_audio_buffer_c(BUFTYPE_UCHAR);
   real_pcm_param = default_pcm_param;
+  maxlag = SIM->get_param_num(BXPN_SOUND_WAVEOUT_MAXLAG)->get();
   cb_count = 0;
   pcm_callback_id = -1;
   res_thread_start = 0;
@@ -415,6 +456,7 @@ void bx_soundlow_waveout_c::resampler(audio_buffer_t *inbuffer, audio_buffer_t *
   if (outbuffer == NULL) {
     BX_LOCK(mixer_mutex);
     audio_buffer_t *newbuffer = audio_buffers[1]->new_buffer(fcount << 1);
+    newbuffer->timestamp_ms = inbuffer->timestamp_ms;
     convert_float_to_s16le(fbuffer, fcount, newbuffer->data);
     BX_UNLOCK(mixer_mutex);
   } else {
