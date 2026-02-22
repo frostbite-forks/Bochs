@@ -333,6 +333,16 @@ struct gf_channel
   Bit32u d3d_vs_temp_regs_count;
   Bit32u d3d_tex_coord_count;
 
+  Bit32u d3d_hierz_dma_obj;
+  Bit32u d3d_hierz_pitch;
+  Bit32u d3d_hierz_offset;
+  Bit32u d3d_hierz_fill_value;
+  bool d3d_hierz_buffer_clear;
+  Bit32u d3d_hierz_unk0d74;
+  Bit32u d3d_hierz_unk0d84;
+  float d3d_hierz_window[4];
+  bool d3d_hierz_enable;
+
   Bit8u  rop;
 
   Bit32u beta;
