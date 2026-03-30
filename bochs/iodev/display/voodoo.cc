@@ -127,11 +127,11 @@ Bit32s voodoo_options_parser(const char *context, int num_params, char *params[]
     bx_list_c *base = (bx_list_c*) SIM->get_param(BXPN_VOODOO);
     for (int i = 1; i < num_params; i++) {
       if (SIM->parse_param_from_list(context, params[i], base) < 0) {
-        BX_ERROR(("%s: unknown parameter for voodoo ignored.", context));
+        if (theVoodooDevice != NULL) {
+          BX_ERROR(("%s: unknown parameter for voodoo ignored.", context));
+        }
       }
     }
-  } else {
-    BX_PANIC(("%s: unknown directive '%s'", context, params[0]));
   }
   return 0;
 }
