@@ -1139,6 +1139,16 @@ void bx_dbg_info_control_regs_command(unsigned cpu)
     dbg_printf("XCR0=0x%08x: %s\n", xcr0, stringify_XCR0(xcr0, s));
   }
 #endif
+
+  if (BX_CPU(cpu)->is_cpu_extension_supported(BX_ISA_PKU)) {
+    Bit32u pkru = SIM->get_param_num("pkru", dbg_cpu_list[cpu])->get();
+    dbg_printf("PKRU=0x%08x\n", pkru);
+  }
+
+  if (BX_CPU(cpu)->is_cpu_extension_supported(BX_ISA_PKS)) {
+    Bit32u pkrs = SIM->get_param_num("pkrs", dbg_cpu_list[cpu])->get();
+    dbg_printf("PKRS=0x%08x\n", pkrs);
+  }
 }
 
 void bx_dbg_info_control_regs_command()

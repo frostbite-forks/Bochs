@@ -2215,9 +2215,9 @@ bool BX_CPU_C::spp_walk(bx_phy_address guest_paddr, bx_address guest_laddr, BxMe
 
 #if BX_DEBUGGER
 
-void dbg_print_paging_pte(int level, Bit64u entry, bool nested_walk)
+void dbg_print_paging_pte(int level, Bit64u pt_address, Bit64u entry, bool nested_walk)
 {
-  dbg_printf("%5s: 0x%08x%08x", nested_walk ? bx_nested_paging_level[level] : bx_paging_level[level], GET32H(entry), GET32L(entry));
+  dbg_printf("%5s: 0x%08x%08x : 0x%08x%08x", nested_walk ? bx_nested_paging_level[level] : bx_paging_level[level], GET32H(pt_address), GET32L(pt_address), GET32H(entry), GET32L(entry));
 
   if (entry & BX_CONST64(0x8000000000000000))
     dbg_printf(" XD");
@@ -2252,9 +2252,9 @@ void dbg_print_paging_pte(int level, Bit64u entry, bool nested_walk)
 }
 
 #if BX_SUPPORT_VMX >= 2
-void dbg_print_ept_paging_pte(int level, Bit64u entry, bool mbe)
+void dbg_print_ept_paging_pte(int level, Bit64u pt_address, Bit64u entry, bool mbe)
 {
-  dbg_printf("EPT %4s: 0x%08x%08x", bx_paging_level[level], GET32H(entry), GET32L(entry));
+  dbg_printf("EPT %4s: 0x%08x%08x : 0x%08x%08x", bx_paging_level[level], GET32H(pt_address), GET32L(pt_address), GET32H(entry), GET32L(entry));
 
   if (level != BX_LEVEL_PTE && (entry & 0x80))
     dbg_printf(" PS");
@@ -2296,7 +2296,7 @@ bool BX_CPU_C::dbg_translate_guest_physical_ept(bx_phy_address guest_paddr, bx_p
     BX_MEM(0)->readPhysicalPage(BX_CPU_THIS, pt_address, 8, &pte);
 #if BX_DEBUGGER
     if (verbose)
-      dbg_print_ept_paging_pte(level, pte, vm->vmexec_ctrls2.MBE_CTRL());
+      dbg_print_ept_paging_pte(level, pt_address, pte, vm->vmexec_ctrls2.MBE_CTRL());
 #endif
     switch(pte & 7) {
     case BX_EPT_ENTRY_NOT_PRESENT:
@@ -2401,7 +2401,7 @@ bool BX_CPU_C::dbg_xlate_linear2phy(bx_address laddr, bx_phy_address *phy, bx_ad
         BX_MEM(0)->readPhysicalPage(BX_CPU_THIS, pt_address, 8, &pte);
 #if BX_DEBUGGER
         if (verbose)
-          dbg_print_paging_pte(level, pte, nested_walk);
+          dbg_print_paging_pte(level, pt_address, pte, nested_walk);
 #endif
         if(!(pte & 1))
           goto page_fault;
@@ -2446,7 +2446,7 @@ bool BX_CPU_C::dbg_xlate_linear2phy(bx_address laddr, bx_phy_address *phy, bx_ad
         BX_MEM(0)->readPhysicalPage(BX_CPU_THIS, pt_address, 4, &pte);
 #if BX_DEBUGGER
         if (verbose)
-          dbg_print_paging_pte(level, pte, nested_walk);
+          dbg_print_paging_pte(level, pt_address, pte, nested_walk);
 #endif
         if (!(pte & 1))
           goto page_fault;
