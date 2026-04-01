@@ -328,7 +328,7 @@ void bx_usb_xhci_c::init(void)
     return;
   }
 
-  BX_XHCI_THIS init_bar_mem(0, IO_SPACE_SIZE, read_handler, write_handler);
+  BX_XHCI_THIS init_bar_mem(0, IO_SPACE_SIZE, read_handler, write_handler, true);
 
   // initialize capability registers
   BX_XHCI_THIS hub.cap_regs.HcCapLength  = (VERSION_MAJOR << 24) | (VERSION_MINOR << 16) | OPS_REGS_OFFSET;
