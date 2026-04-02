@@ -328,7 +328,11 @@ void bx_usb_xhci_c::init(void)
     return;
   }
 
+#if ADDR_CAP_64
   BX_XHCI_THIS init_bar_mem(0, IO_SPACE_SIZE, read_handler, write_handler, true);
+#else
+  BX_XHCI_THIS init_bar_mem(0, IO_SPACE_SIZE, read_handler, write_handler);
+#endif
 
   // initialize capability registers
   BX_XHCI_THIS hub.cap_regs.HcCapLength  = (VERSION_MAJOR << 24) | (VERSION_MINOR << 16) | OPS_REGS_OFFSET;
@@ -465,7 +469,7 @@ void bx_usb_xhci_c::reset(unsigned type)
 
       // address space 0x10 - 0x17
 #if ADDR_CAP_64
-      { 0x10, 0x40 }, { 0x11, 0x00 }, // 64-bit wide and anywhere in the 64-bit address space
+      { 0x10, 0x04 }, { 0x11, 0x00 }, // 64-bit wide and anywhere in the 64-bit address space
 #else
       { 0x10, 0x00 }, { 0x11, 0x00 }, // 32-bit wide and anywhere in the 32-bit address space
 #endif  // ADDR_CAP_64
@@ -2050,7 +2054,7 @@ bool bx_usb_xhci_c::write_handler(bx_phy_address addr, unsigned len, void *data,
             BX_XHCI_THIS hub.runtime_regs.interrupter[i].erdp.eventadd |= (Bit64u) (value & ~0x0F);
           }
 #else
-          BX_XHCI_THIS hub.runtime_regs.interrupter[i].erdp.eventadd == (Bit64u) (value & ~0x0F);
+          BX_XHCI_THIS hub.runtime_regs.interrupter[i].erdp.eventadd = (Bit64u) (value & ~0x0F);
 #endif
           break;
         case 0x1C:
