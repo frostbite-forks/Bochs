@@ -6,7 +6,7 @@
 //
 //  Copyright (c) 2006 CodeSourcery.
 //  Written by Paul Brook
-//  Copyright (C) 2009-2023  The Bochs Project
+//  Copyright (C) 2009-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -524,7 +524,7 @@ usb_msd_device_c::usb_msd_device_c(const char *devname)
 {
   char pname[10];
   char label[32];
-  bx_param_string_c *path;
+  bx_param_filename_c *path;
   bx_param_enum_c *status;
 
   if (!strcmp(devname, "disk")) {
@@ -553,8 +553,9 @@ usb_msd_device_c::usb_msd_device_c(const char *devname)
     s.config = new bx_list_c(usb_rt, pname, label);
     s.config->set_options(bx_list_c::SERIES_ASK | bx_list_c::USE_BOX_TITLE);
     s.config->set_device_param(this);
-    path = new bx_param_string_c(s.config, "path", "Path", "", "", BX_PATHNAME_LEN);
+    path = new bx_param_filename_c(s.config, "path", "Path", "", "", BX_PATHNAME_LEN);
     path->set(s.fname);
+    path->set_extension("iso");
     path->set_handler(cdrom_path_handler);
     status = new bx_param_enum_c(s.config,
       "status",
