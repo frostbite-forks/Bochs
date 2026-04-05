@@ -2773,7 +2773,7 @@ void BX_CPU_C::VMexitSaveGuestState(Bit32u reason, Bit32u vector)
   }
 
   // effectively wakeup from MWAIT state on VMEXIT
-  if (BX_CPU_THIS_PTR activity_state >= BX_VMX_LAST_ACTIVITY_STATE)
+  if (BX_CPU_THIS_PTR activity_state > BX_VMX_LAST_ACTIVITY_STATE)
     VMwrite32(VMCS_32BIT_GUEST_ACTIVITY_STATE, BX_ACTIVITY_STATE_ACTIVE);
   else
     VMwrite32(VMCS_32BIT_GUEST_ACTIVITY_STATE, BX_CPU_THIS_PTR activity_state);
