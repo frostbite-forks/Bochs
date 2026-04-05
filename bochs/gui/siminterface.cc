@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2002-2025  The Bochs Project
+//  Copyright (C) 2002-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -1608,7 +1608,7 @@ bool bx_real_sim_c::opt_plugin_ctrl(const char *plugname, bool load)
     BX_PANIC(("Plugin '%s' not found", plugname));
     return 0;
   }
-  if (load != PLUG_device_present(plugname)) {
+  if (load != PLUG_device_present(plugname, false)) {
     if (load) {
       if (PLUG_load_opt_plugin(plugname)) {
         SIM->get_param_bool(plugname, plugin_ctrl)->set(1);

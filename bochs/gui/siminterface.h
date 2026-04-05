@@ -2,7 +2,7 @@
 // $Id$
 /////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) 2001-2025  The Bochs Project
+//  Copyright (C) 2001-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -453,13 +453,6 @@ enum {
   BX_DDC_MODE_BUILTIN,
   BX_DDC_MODE_BUILTIN_GUI,
   BX_DDC_MODE_FILE
-};
-
-enum {
-  BX_VBE_MEMSIZE_4MB,
-  BX_VBE_MEMSIZE_8MB,
-  BX_VBE_MEMSIZE_16MB,
-  BX_VBE_MEMSIZE_32MB
 };
 
 enum {

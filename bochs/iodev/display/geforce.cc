@@ -80,25 +80,28 @@ void geforce_init_options(void)
     NULL
   };
 
-  bx_param_c *display = SIM->get_param("display");
-  bx_list_c *menu = new bx_list_c(display, "geforce", "GeForce");
-  menu->set_options(menu->SHOW_PARENT);
-  new bx_param_enum_c(menu,
-    "model",
-    "GeForce model",
-    "Selects the GeForce model to emulate.",
-    geforce_model_list,
-    GEFORCE_3, GEFORCE_2);
+  bx_param_enum_c *model = SIM->get_param_enum(BXPN_VGA_EXT_MODEL);
+  model->set_enabled(1);
+  model->set_label("GeForce model");
+  model->set_description("Selects the GeForce model to emulate");
+  model->set_choices(geforce_model_list, GEFORCE_3, GEFORCE_2);
+}
+
+void geforce_cleanup_options(void)
+{
+  bx_param_enum_c *model = SIM->get_param_enum(BXPN_VGA_EXT_MODEL);
+  model->set_choices(NULL, 0, 0);
+  model->set_label("Model");
+  model->set_enabled(0);
 }
 
 Bit32s geforce_options_parser(const char *context, int num_params, char *params[])
 {
   if (!strcmp(params[0], "geforce")) {
-    bx_list_c *base = (bx_list_c*) SIM->get_param(BXPN_GEFORCE);
-    for (int i = 1; i < num_params; i++) {
-      if (SIM->parse_param_from_list(context, params[i], base) < 0) {
-        BX_ERROR(("%s: unknown parameter for geforce ignored.", context));
-      }
+    if (!strncmp(params[1], "model=", 6)) {
+      SIM->get_param_enum(BXPN_VGA_EXT_MODEL)->set_by_name(&params[1][6]);
+    } else {
+      BX_ERROR(("%s: unknown parameter for geforce ignored.", context));
     }
   } else {
     BX_PANIC(("%s: unknown directive '%s'", context, params[0]));
@@ -108,7 +111,7 @@ Bit32s geforce_options_parser(const char *context, int num_params, char *params[
 
 Bit32s geforce_options_save(FILE *fp)
 {
-  return SIM->write_param_list(fp, (bx_list_c*) SIM->get_param(BXPN_GEFORCE), NULL, 0);
+  return fprintf(fp, "geforce: model=%s\n", SIM->get_param_enum(BXPN_VGA_EXT_MODEL)->get_selected());
 }
 
 PLUGIN_ENTRY_FOR_MODULE(geforce)
@@ -122,6 +125,7 @@ PLUGIN_ENTRY_FOR_MODULE(geforce)
     // register add-on option for bochsrc and command line
     SIM->register_addon_option("geforce", geforce_options_parser, geforce_options_save);
   } else if (mode == PLUGIN_FINI) {
+    geforce_cleanup_options();
     SIM->unregister_addon_option("geforce");
     bx_list_c *menu = (bx_list_c*)SIM->get_param("display");
     menu->remove("geforce");
@@ -147,9 +151,8 @@ bx_geforce_c::~bx_geforce_c()
 
 bool bx_geforce_c::init_vga_extension(void)
 {
-  // Read in values from config interface
-  bx_list_c* base = (bx_list_c*)SIM->get_param(BXPN_GEFORCE);
-  Bit32s model_enum = (Bit8u)SIM->get_param_enum("model", base)->get();
+  // Read in value from config interface
+  Bit32s model_enum = (Bit8u)SIM->get_param_enum(BXPN_VGA_EXT_MODEL)->get();
 
   const char* model_string;
   if (model_enum == GEFORCE_2) {

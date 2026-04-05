@@ -87,7 +87,6 @@ static Bit64s bx_param_handler(bx_param_c *param, bool set, Bit64s val)
 {
   char pname[BX_PATHNAME_LEN];
   Bit8u device;
-  Bit64s oldval;
 
   bx_list_c *base = (bx_list_c*) param->get_parent();
   base->get_param_path(pname, BX_PATHNAME_LEN);
@@ -116,10 +115,15 @@ static Bit64s bx_param_handler(bx_param_c *param, bool set, Bit64s val)
     param->get_param_path(pname, BX_PATHNAME_LEN);
     if (!strcmp(pname, BXPN_VGA_EXTENSION)) {
       if (set) {
-        oldval = ((bx_param_enum_c*)param)->get();
-        if (val != oldval) {
-          PLUG_unload_opt_plugin(vga_extension_plugins[(Bit8u)oldval]);
-          PLUG_load_plugin_var(vga_extension_plugins[(Bit8u)val], PLUGTYPE_VGA);
+        const char *oldplug = vga_extension_plugins[(Bit8u)((bx_param_enum_c*)param)->get()];
+        const char *newplug = vga_extension_plugins[(Bit8u)val];
+        if (strcmp(newplug, oldplug)) {
+          PLUG_unload_opt_plugin(oldplug);
+          if (!PLUG_load_plugin_var(newplug, PLUGTYPE_VGA)) {
+            val = ((bx_param_enum_c*)param)->get();
+          }
+        } else if (!PLUG_device_present(newplug, true)) {
+          PLUG_load_plugin_var(newplug, PLUGTYPE_VGA);
         }
       }
     } else if ((!strcmp(pname, BXPN_FLOPPYA_DEVTYPE)) ||
@@ -1025,14 +1029,25 @@ void bx_init_options()
       10);
   vga_update_freq->set_ask_format ("Type a new value for VGA update frequency: [%d] ");
 
+  bx_list_c *vgaext = new bx_list_c(display, "vgaext", "VGA extension");
+  vgaext->set_options(vgaext->SERIES_ASK);
   bx_init_vgaext_list();
-  bx_param_enum_c *vga_extension = new bx_param_enum_c(display,
-      "vga_extension",
+  bx_param_enum_c *vga_extension = new bx_param_enum_c(vgaext,
+      "extension",
       "VGA Extension",
       "Name of the VGA extension",
       vga_extension_names,
       BX_VGA_EXTENSION_VBE, BX_VGA_EXTENSION_NONE);
   vga_extension->set_handler(bx_param_handler);
+  // Dummy option for model selection (replaced by extension code)
+  bx_param_enum_c *vgaext_model = new bx_param_enum_c(vgaext,
+      "model",
+      "Model",
+      "",
+      NULL,
+      0, 0);
+  vgaext_model->set_enabled(0);
+  vga_extension->set(BX_VGA_EXTENSION_VBE);
 
   static const char *ddc_mode_list[] = {
     "disabled",
@@ -1057,24 +1072,6 @@ void bx_init_options()
   ddc_mode->set_dependent_list(deplist, 0);
   ddc_mode->set_dependent_bitmap(BX_DDC_MODE_FILE, 1);
 
-  static const char *vbe_memsize_list[] = {
-    "4",
-    "8",
-    "16",
-    "32",
-    NULL
-  };
-  bx_param_enum_c *vbe_memsize = new bx_param_enum_c(display,
-      "vbe_memsize",
-      "VBE memory size (MB)",
-      "Size of VBE memory in MB",
-      vbe_memsize_list,
-      BX_VBE_MEMSIZE_16MB, BX_VBE_MEMSIZE_4MB);
-
-  deplist = new bx_list_c(NULL);
-  deplist->add(vbe_memsize);
-  vga_extension->set_dependent_list(deplist, 0);
-  vga_extension->set_dependent_bitmap(BX_VGA_EXTENSION_VBE, 1);
   display->set_options(display->SHOW_PARENT);
 
   // keyboard & mouse subtree
@@ -2929,7 +2926,7 @@ static int parse_line_formatted(const char *context, int num_params, char *param
           SIM->get_param_string(BXPN_DDC_FILE)->set(strval+5);
         }
       } else if (!strncmp(params[i], "vbe_memsize=", 12)) {
-        SIM->get_param_enum(BXPN_VBE_MEMSIZE)->set_by_name(&params[i][12]);
+        SIM->get_param_enum(BXPN_VGA_EXT_MODEL)->set_by_name(&params[i][12]);
       } else {
         PARSE_ERR(("%s: vga directive malformed.", context));
       }
@@ -3600,7 +3597,10 @@ int bx_write_configuration(const char *rc, int overwrite)
   if (SIM->get_param_enum(BXPN_DDC_MODE)->get() == BX_DDC_MODE_FILE) {
     fprintf(fp, ":%s", SIM->get_param_string(BXPN_DDC_FILE)->getptr());
   }
-  fprintf(fp, ", vbe_memsize=%s\n", SIM->get_param_enum(BXPN_VBE_MEMSIZE)->get_selected());
+  if (!strcmp(SIM->get_param_enum(BXPN_VGA_EXTENSION)->get_selected(), "vbe")) {
+    fprintf(fp, ", vbe_memsize=%s", SIM->get_param_enum(BXPN_VGA_EXT_MODEL)->get_selected());
+  }
+  fprintf(fp, "\n");
 #if BX_SUPPORT_SMP
   fprintf(fp, "cpu: count=%u:%u:%u, ips=%u, quantum=%d, ",
     SIM->get_param_num(BXPN_CPU_NPROCESSORS)->get(), SIM->get_param_num(BXPN_CPU_NCORES)->get(),

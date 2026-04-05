@@ -762,15 +762,19 @@ void pluginUnregisterDeviceDevmodel(const char *name, Bit16u type)
 /* Plugin system: Check if a plugin is loaded                           */
 /************************************************************************/
 
-bool pluginDevicePresent(const char *name)
+bool pluginDevicePresent(const char *name, bool core)
 {
   device_t *device;
 
-  for (device = devices; device; device = device->next)
-  {
-    if (!strcmp(name, device->name)) return 1;
+  if (core) {
+    for (device = core_devices; device; device = device->next) {
+      if (!strcmp(name, device->name)) return 1;
+    }
+  } else {
+    for (device = devices; device; device = device->next) {
+      if (!strcmp(name, device->name)) return 1;
+    }
   }
-
   return 0;
 }
 

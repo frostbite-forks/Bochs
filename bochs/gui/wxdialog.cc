@@ -1100,7 +1100,13 @@ bool ParamDialog::CopyGuiToParam(bx_param_c *param)
     case BXT_PARAM_ENUM: {
       bx_param_enum_c *enump = (bx_param_enum_c*) pstr->param;
       int value = pstr->u.choice->GetSelection() + enump->get_min();
-      if (value != enump->get()) enump->set(value);
+      if (value != enump->get()) {
+        char buf[80];
+        wxString tmp(pstr->u.choice->GetString(pstr->u.choice->GetSelection()));
+        strncpy(buf, tmp.mb_str(wxConvUTF8), sizeof(buf) - 1);
+        buf[sizeof(buf)-1] = 0;
+        enump->set_by_name(buf);
+      }
       break;
     }
     case BXT_PARAM_STRING: {

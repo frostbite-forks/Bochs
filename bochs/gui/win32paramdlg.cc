@@ -996,7 +996,8 @@ void SetParamList(HWND hDlg, bx_list_c *list)
         idx = (LRESULT)(SendMessage(GetDlgItem(hDlg, ID_PARAM + cid), CB_GETCURSEL, 0, 0));
         val = (LRESULT)(SendMessage(GetDlgItem(hDlg, ID_PARAM + cid), CB_GETITEMDATA, (WPARAM)idx, 0) + eparam->get_min());
         if (val != eparam->get()) {
-          eparam->set(val);
+          GetDlgItemText(hDlg, ID_PARAM + cid, buffer, 80);
+          eparam->set_by_name(buffer);
         }
       } else {
         if (SendMessage(GetDlgItem(hDlg, ID_PARAM + cid), EM_GETMODIFY, 0, 0)) {

@@ -233,7 +233,7 @@ void bx_devices_c::init(BX_MEM_C *newmem)
     if ((chipset == BX_PCI_CHIPSET_I440FX) ||
         (chipset == BX_PCI_CHIPSET_I440BX)) {
       // UHCI is a part of the PIIX3/PIIX4, so load / enable it
-      if (!PLUG_device_present("usb_uhci")) {
+      if (!PLUG_device_present("usb_uhci", false)) {
         SIM->opt_plugin_ctrl("usb_uhci", 1);
       }
       SIM->get_param_bool(BXPN_UHCI_ENABLED)->set(1);
