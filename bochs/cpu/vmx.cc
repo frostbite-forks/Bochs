@@ -2507,7 +2507,7 @@ void BX_CPU_C::VMenterInjectEvents(void)
     interrupt(vector, type, push_error, error_code);
   }
 
-  BX_CPU_THIS_PTR last_exception_type = 0; // error resolved
+  BX_CPU_THIS_PTR last_exception_type = BX_ET_NONE; // error resolved
 }
 
 Bit32u BX_CPU_C::LoadMSRs(Bit32u msr_cnt, bx_phy_address pAddr)
@@ -3178,7 +3178,7 @@ void BX_CPU_C::VMexit(Bit32u reason, Bit64u qualification)
   }
 
   BX_CPU_THIS_PTR EXT = 0;
-  BX_CPU_THIS_PTR last_exception_type = 0;
+  BX_CPU_THIS_PTR last_exception_type = BX_ET_NONE; // error resolved
 
 #if BX_DEBUGGER
   if (bx_dbg.debugger_active) {

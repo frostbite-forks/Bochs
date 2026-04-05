@@ -695,7 +695,7 @@ void BX_CPU_C::Svm_Vmexit(int reason, Bit64u exitinfo1, Bit64u exitinfo2)
   //
 
   BX_CPU_THIS_PTR EXT = 0;
-  BX_CPU_THIS_PTR last_exception_type = 0;
+  BX_CPU_THIS_PTR last_exception_type = BX_ET_NONE; // error resolved
 
 #if BX_DEBUGGER
   if (bx_dbg.debugger_active) {
@@ -770,7 +770,7 @@ bool BX_CPU_C::SvmInjectEvents(void)
 
   interrupt(vector, type, push_error, error_code);
 
-  BX_CPU_THIS_PTR last_exception_type = 0; // error resolved
+  BX_CPU_THIS_PTR last_exception_type = BX_ET_NONE; // error resolved
 
   return true;
 }

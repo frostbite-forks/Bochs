@@ -1193,7 +1193,7 @@ void BX_CPU_C::reset(unsigned source)
   }
 
   BX_CPU_THIS_PTR EXT = 0;
-  BX_CPU_THIS_PTR last_exception_type = 0;
+  BX_CPU_THIS_PTR last_exception_type = BX_ET_NONE;
 #if BX_SUPPORT_FRED
   BX_CPU_THIS_PTR fred_event_info = 0;
   BX_CPU_THIS_PTR fred_event_data = 0;

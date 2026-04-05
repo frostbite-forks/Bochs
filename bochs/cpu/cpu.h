@@ -1279,7 +1279,8 @@ public: // for now...
 
   // for exceptions
   static jmp_buf jmp_buf_env;
-  unsigned last_exception_type;
+#define BX_ET_NONE (-1)
+  int last_exception_type;
 #if BX_SUPPORT_FRED
   Bit32u fred_event_info;
   Bit64u fred_event_data;
