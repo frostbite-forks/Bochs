@@ -1017,7 +1017,7 @@ void BX_CPU_C::exception(unsigned vector, Bit16u error_code)
   /* if we've already had 1st exception, see if 2nd causes a
    * Double Fault instead. Otherwise, just record 1st exception.
    */
-  if (exception_type != BX_ET_NONE && exception_type != BX_ET_DOUBLE_FAULT) {
+  if (BX_CPU_THIS_PTR last_exception_type != BX_ET_NONE && exception_type != BX_ET_DOUBLE_FAULT) {
     if (! is_exception_OK[BX_CPU_THIS_PTR last_exception_type][exception_type]) {
       exception(BX_DF_EXCEPTION, 0);
     }
