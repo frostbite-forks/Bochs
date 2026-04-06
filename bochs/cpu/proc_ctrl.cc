@@ -644,6 +644,10 @@ void BX_CPU_C::handleCpuContextChange(void)
   handleAvxModeChange();
 #endif
 #endif
+
+#if BX_SUPPORT_X86_64
+  BX_CPU_THIS_PTR linaddr_width = BX_CPU_THIS_PTR cr4.get_LA57() ? 57 : 48;
+#endif
 }
 
 void BX_CPP_AttrRegparmN(1) BX_CPU_C::RDPMC(bxInstruction_c *i)
