@@ -281,13 +281,13 @@ void bx_ohci_core_c::reset_port(int p)
   hub.usb_port[p].HcRhPortStatus.pes       = 0;
 }
 
-void bx_ohci_core_c::ohci_register_state(bx_list_c *parent)
+void bx_ohci_core_c::ohci_register_state(const char *pname, bx_list_c *parent)
 {
   unsigned i;
   char portnum[8];
   bx_list_c *hub1, *port, *reg;
 
-  bx_list_c *list = new bx_list_c(parent, "usb_ohci", "USB OHCI State");
+  bx_list_c *list = new bx_list_c(parent, pname, "OHCI State");
   hub1 = new bx_list_c(list, "hub");
   reg = new bx_list_c(hub1, "HcControl");
   BXRS_PARAM_BOOL(reg, rwe, hub.op_regs.HcControl.rwe);

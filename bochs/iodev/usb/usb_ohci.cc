@@ -204,7 +204,7 @@ void bx_usb_ohci_c::reset(unsigned type)
 
 void bx_usb_ohci_c::register_state()
 {
-  BX_OHCI_THIS ohci_register_state(SIM->get_bochs_root());
+  BX_OHCI_THIS ohci_register_state("usb_ohci", SIM->get_bochs_root());
 }
 
 void bx_usb_ohci_c::after_restore_state()

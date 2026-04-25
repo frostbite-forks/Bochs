@@ -215,7 +215,7 @@ void bx_usb_uhci_c::reset(unsigned type)
 
 void bx_usb_uhci_c::register_state()
 {
-  BX_UHCI_THIS uhci_register_state(SIM->get_bochs_root());
+  BX_UHCI_THIS uhci_register_state("usb_uhci", SIM->get_bochs_root());
 }
 
 void bx_usb_uhci_c::after_restore_state()

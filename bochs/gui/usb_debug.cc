@@ -416,7 +416,7 @@ bx_list_c* get_uhci_state()
   if (usb_debug_devid == -1) {
     strcpy(pname, "usb_uhci");
   } else {
-    sprintf(pname, "usb_ehci.uhci%d.usb_uhci", usb_debug_devid);
+    sprintf(pname, "usb_ehci.uhci%d", usb_debug_devid);
   }
   return (bx_list_c*)SIM->get_param(pname, SIM->get_bochs_root());
 }

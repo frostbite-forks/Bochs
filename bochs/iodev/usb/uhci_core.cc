@@ -183,13 +183,13 @@ void bx_uhci_core_c::reset_uhci(unsigned type)
   }
 }
 
-void bx_uhci_core_c::uhci_register_state(bx_list_c *parent)
+void bx_uhci_core_c::uhci_register_state(const char *pname, bx_list_c *parent)
 {
   unsigned j;
   char portnum[8];
   bx_list_c *hub1, *usb_cmd, *usb_st, *usb_en, *port;
 
-  bx_list_c *list = new bx_list_c(parent, "usb_uhci", "USB UHCI State");
+  bx_list_c *list = new bx_list_c(parent, pname, "UHCI State");
   hub1 = new bx_list_c(list, "hub");
   usb_cmd = new bx_list_c(hub1, "usb_command");
   BXRS_PARAM_BOOL(usb_cmd, max_packet_size, hub.usb_command.max_packet_size);

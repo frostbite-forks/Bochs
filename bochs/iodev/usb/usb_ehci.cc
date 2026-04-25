@@ -445,7 +445,7 @@ void bx_usb_ehci_c::register_state(void)
 {
   unsigned i;
   char tmpname[16];
-  bx_list_c *hub, *op_regs, *port, *reg, *hcic;
+  bx_list_c *hub, *op_regs, *port, *reg;
 
   bx_list_c *list = new bx_list_c(SIM->get_bochs_root(), "usb_ehci", "USB EHCI State");
   hub = new bx_list_c(list, "hub");
@@ -501,13 +501,11 @@ void bx_usb_ehci_c::register_state(void)
   for (i = 0; i < 3; i++) {
     if (uhci[i]) {
       sprintf(tmpname, "uhci%d", i);
-      hcic = new bx_list_c(list, tmpname);
-      uhci[i]->uhci_register_state(hcic);
+      uhci[i]->uhci_register_state(tmpname, list);
     }
     if (ohci[i]) {
       sprintf(tmpname, "ohci%d", i);
-      hcic = new bx_list_c(list, tmpname);
-      ohci[i]->ohci_register_state(hcic);
+      ohci[i]->ohci_register_state(tmpname, list);
     }
   }
 

@@ -142,6 +142,7 @@ Detailed change log :
     - E1000: Added loopback mode for diagnostics
   - USB
     - UHCI fix: USBCMD and USBSTS register accept byte writes
+    - USB debugger now supports the UHCI companion controllers of EHCI
     - Changing device connected to USB port on the command line works again.
       Port options are reset in that case.
     - Log error if trying to read from a non-powered port.
