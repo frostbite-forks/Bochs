@@ -5394,7 +5394,7 @@ public: // for now...
   BX_SMF void VMexit_CR8_Read(bxInstruction_c *i) BX_CPP_AttrRegparmN(1);
   BX_SMF void VMexit_CR8_Write(bxInstruction_c *i) BX_CPP_AttrRegparmN(1);
   BX_SMF void VMexit_DR_Access(unsigned read, unsigned dr, unsigned reg);
-  BX_SMF void allowVmxForFirmware(void);
+  BOCHSAPI BX_SMF void allowVmxForFirmware(void);
 #if BX_SUPPORT_VMX >= 2
   BX_SMF void Virtualization_Exception(Bit64u qualification, Bit64u guest_physical, Bit64u guest_linear);
   BX_SMF void vmfunc_eptp_switching(void);
