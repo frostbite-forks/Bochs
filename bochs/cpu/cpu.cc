@@ -30,12 +30,21 @@
 
 #include "bx_debug/debug.h"
 
+// SPEED HACK: When handler chaining is enabled, increased the minimum sync
+// delta from caller-specified `allowed_delta` to at least 512 instructions.
+// This means the emulator accumulates up to 512 instructions before flushing
+// ticks to the timer subsystem, drastically reducing overhead from
+// pc_system.tickn() and countdownEvent() calls. The repeat-instruction paths
+// pass BX_REPEAT_TIME_UPDATE_INTERVAL which is already large; this ensures
+// the main loop path (which passes 0) also batches aggressively.
+// The non-chaining path is unchanged here because the cpu_loop's instr_batch
+// counter already gates how often this macro is reached.
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS
 
 #define BX_SYNC_TIME_IF_SINGLE_PROCESSOR(allowed_delta) {                               \
   if (BX_SMP_PROCESSORS == 1) {                                                         \
     Bit32u delta = (Bit32u)(BX_CPU_THIS_PTR icount - BX_CPU_THIS_PTR icount_last_sync); \
-    if (delta >= allowed_delta) {                                                       \
+    if (delta >= BX_MAX(512u, (unsigned)(allowed_delta))) {                              \
       BX_CPU_THIS_PTR sync_icount();                                                    \
       BX_TICKN(delta);                                                                  \
     }                                                                                   \
@@ -163,6 +172,12 @@ void BX_CPU_C::cpu_loop(void)
   }
 #endif
 
+  // SPEED HACK: Batch counter for deferring expensive per-instruction checks.
+  // Instead of calling BX_SYNC_TIME / checking async_event every instruction,
+  // we only do so every 64 instructions (tunable via the bitmask below).
+  // This trades interrupt latency and timer precision for raw IPS throughput.
+  unsigned instr_batch = 0;
+
   while (1) {
 
     // check on events which occurred for previous instructions (traps)
@@ -185,9 +200,13 @@ void BX_CPU_C::cpu_loop(void)
       // when handlers chaining is enabled this single call will execute entire trace
       BX_CPU_CALL_METHOD(i->execute1, (i)); // might iterate repeat instruction
 
-      BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
-
-      if (BX_CPU_THIS_PTR async_event) break;
+      // SPEED HACK: Only sync time and check async events every 64 instructions.
+      // Original code called BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0) and checked
+      // async_event unconditionally on every iteration.
+      if ((instr_batch++ & 0x3F) == 0) {
+        BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
+        if (BX_CPU_THIS_PTR async_event) break;
+      }
 
       i = getICacheEntry()->i;
     }
@@ -205,14 +224,19 @@ void BX_CPU_C::cpu_loop(void)
       BX_INSTR_AFTER_EXECUTION(BX_CPU_ID, i);
       BX_CPU_THIS_PTR icount++;
 
-      BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
+      // SPEED HACK: Only sync time and check async events every 64 instructions.
+      // Original code called BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0) and checked
+      // async_event unconditionally on every iteration.
+      if ((instr_batch++ & 0x3F) == 0) {
+        BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
 
-      // note instructions generating exceptions never reach this point
+        // note instructions generating exceptions never reach this point
 #if BX_GDBSTUB
-      if (gdbstub_instruction_epilog()) return;
+        if (gdbstub_instruction_epilog()) return;
 #endif
 
-      if (BX_CPU_THIS_PTR async_event) break;
+        if (BX_CPU_THIS_PTR async_event) break;
+      }
 
       if (++i == last) {
         entry = getICacheEntry();

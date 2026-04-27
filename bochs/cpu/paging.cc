@@ -1257,6 +1257,32 @@ void BX_CPU_C::update_access_dirty(bx_phy_address *entry_addr, Bit32u *entry, Bx
 // Translate a linear address to a physical address
 bx_phy_address BX_CPU_C::translate_linear(bx_TLB_entry *tlbEntry, bx_address laddr, unsigned user, unsigned rw)
 {
+  // SPEED HACK: Uncomment the block below to short-circuit ALL paging,
+  // TLB lookups, and privilege checks. This assumes:
+  //   - Real mode or flat protected mode with identity-mapped segments
+  //   - No paging (CR0.PG = 0)
+  //   - Ring 0 only (no user/supervisor distinction needed)
+  //   - A20 gate is enabled
+  // This is safe for DOS and other real-mode OSes. It will CRASH any
+  // guest that enables paging or runs ring-3 code. To activate, change
+  // the #if 0 to #if 1.
+#if 0 // SPEED HACK: real-mode fast path - bypass TLB and page walk entirely
+  {
+    bx_phy_address paddress = (bx_phy_address)(laddr & 0xFFFFFFFF);
+    paddress = A20ADDR(paddress);
+    bx_address lpf = LPFOf(laddr);
+    tlbEntry->lpf = lpf | TLB_NoHostPtr;
+    tlbEntry->lpf_mask = 0xfff;
+#if BX_SUPPORT_PKEYS
+    tlbEntry->pkey = 0;
+#endif
+    tlbEntry->ppf = PPFOf(paddress);
+    tlbEntry->accessBits = TLB_SysReadOK | TLB_SysWriteOK | TLB_SysExecuteOK
+                         | TLB_UserReadOK | TLB_UserWriteOK | TLB_UserExecuteOK;
+    return paddress;
+  }
+#endif // SPEED HACK: end real-mode fast path
+
 #if BX_SUPPORT_X86_64
   if (! long_mode()) laddr &= 0xffffffff;
 #endif

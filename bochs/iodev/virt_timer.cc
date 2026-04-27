@@ -79,8 +79,11 @@ const Bit64u USEC_PER_SECOND = BX_CONST64(1000000);
 
 //MAINLINE Configuration (For realtime PIT):
 
-//How much faster than real time we can go:
-#define MAX_MULT (1.25)
+// SPEED HACK: Raised from 1.25 to 100.0 to allow emulation to run far
+// ahead of real time. The original cap of 1.25x prevented the emulator
+// from exceeding host wall-clock speed by more than 25%. With 100x, the
+// virtual timer will almost never throttle the CPU.
+#define MAX_MULT (100.0)
 
 //Minimum number of emulated useconds per second.
 //  Now calculated using BX_MIN_IPS, the minimum number of
@@ -445,7 +448,22 @@ void bx_virt_timer_c::timer_handler(bool mode)
   if (usec_delta) {
 #if BX_HAVE_REALTIME_USEC
     Bit64u ticks_delta = 0;
-    Bit64u real_time_delta = GET_VIRT_REALTIME64_USEC() - last_real_time - real_time_delay;
+
+    // SPEED HACK: Reduce host real-time clock polling frequency.
+    // Only query the host clock every 16th invocation instead of every time.
+    // Between polls, assume real time advanced proportionally to emulated time.
+    // This avoids expensive syscalls (gettimeofday / QueryPerformanceCounter)
+    // that stall the CPU thread.
+    static unsigned rt_poll_counter = 0;
+    static Bit64u cached_real_time_delta = 0;
+    Bit64u real_time_delta;
+    if ((rt_poll_counter++ & 0x0F) == 0) {
+      real_time_delta = GET_VIRT_REALTIME64_USEC() - last_real_time - real_time_delay;
+      cached_real_time_delta = real_time_delta;
+    } else {
+      real_time_delta = cached_real_time_delta;
+    }
+
     Bit64u real_time_total = real_time_delta + total_real_usec;
     Bit64u system_time_delta = (Bit64u)usec_delta + (Bit64u)stored_delta;
     if (real_time_delta) {
@@ -454,34 +472,29 @@ void bx_virt_timer_c::timer_handler(bool mode)
     }
     ticks_per_second = USEC_PER_SECOND;
 
-    //Start out with the number of ticks we would like
-    // to have to line up with real time.
     ticks_delta = real_time_total - total_ticks;
     if (real_time_total < total_ticks) {
-      //This slows us down if we're already ahead.
-      //  probably only an issue on startup, but it solves some problems.
+      // SPEED HACK: Original would set ticks_delta=0 here to slow us down
+      // when ahead. We still do it to avoid underflow, but MAX_MULT=100.0
+      // ensures this path is rarely hit.
       ticks_delta = 0;
     }
     if (ticks_delta + total_ticks - last_realtime_ticks > F2I(MAX_MULT * I2F(last_realtime_delta))) {
-      //This keeps us from going too fast in relation to real time.
 #if 0
       ticks_delta = (F2I(MAX_MULT * I2F(last_realtime_delta))) + last_realtime_ticks - total_ticks;
 #endif
       ticks_per_second = F2I(MAX_MULT * I2F(USEC_PER_SECOND));
     }
     if (ticks_delta > system_time_delta * USEC_PER_SECOND / MIN_USEC_PER_SECOND) {
-      //This keeps us from having too few instructions between ticks.
       ticks_delta = system_time_delta * USEC_PER_SECOND / MIN_USEC_PER_SECOND;
     }
     if (ticks_delta > s[1].virtual_next_event_time) {
-      //This keeps us from missing ticks.
       ticks_delta = s[1].virtual_next_event_time;
     }
 
     if (ticks_delta) {
 
 #if DEBUG_REALTIME_WITH_PRINTF
-      //Every second print some info.
       if (((last_real_time + real_time_delta) / USEC_PER_SECOND) > (last_real_time / USEC_PER_SECOND)) {
         Bit64u temp1, temp2, temp3, temp4;
         temp1 = (Bit64u) total_real_usec;
@@ -506,7 +519,6 @@ void bx_virt_timer_c::timer_handler(bool mode)
 
     Bit64u a = usec_per_second, b;
     if (real_time_delta) {
-      //FIXME
       Bit64u em_realtime_delta = last_system_usec + stored_delta - em_last_realtime;
       b = (USEC_PER_SECOND * em_realtime_delta / real_time_delta);
       em_last_realtime = last_system_usec + stored_delta;

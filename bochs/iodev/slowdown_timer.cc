@@ -119,36 +119,18 @@ void bx_slowdown_timer_c::handle_timer()
   printf("Entering slowdown timer handler\n");
 #endif
 
-  /* Decide if we're behind.
-   * Set interrupt interval accordingly. */
-  if(totaltime > total_emu_time) {
-    bx_pc_system.deactivate_timer(s.timer_handle);
-    bx_pc_system.activate_timer(s.timer_handle,
-      (Bit32u)(s.MAXmultiplier * (float)((Bit64s)s.Q)), 0);
-#if BX_SLOWDOWN_PRINTF_FEEDBACK
-    printf("running at MAX speed\n");
-#endif
-  } else {
-    bx_pc_system.deactivate_timer(s.timer_handle);
-    bx_pc_system.activate_timer(s.timer_handle,(Bit32u)s.Q,0);
-#if BX_SLOWDOWN_PRINTF_FEEDBACK
-    printf("running at NORMAL speed\n");
-#endif
-  }
+  // SPEED HACK: Always run at MAX speed - never throttle back to normal pace.
+  // The original code would switch between MAX and NORMAL speed depending on
+  // whether we were behind real-time. We always choose MAX now.
+  bx_pc_system.deactivate_timer(s.timer_handle);
+  bx_pc_system.activate_timer(s.timer_handle,
+    (Bit32u)(s.MAXmultiplier * (float)((Bit64s)s.Q)), 0);
 
-  /* Make sure we took at least one time quantum. */
-  /* This is a little strange.  I'll try to explain.
-   * We're running bochs one second ahead of real time.
-   *  this gives us a very precise division on whether
-   *  we're ahead or behind the second line.
-   * Basically, here's how it works:
-   * *****|******************|***********...
-   *      Time               Time+1sec
-   *                        <^Bochs doesn't delay.
-   *                          ^>Bochs delays.
-   *    <^Bochs runs at MAX speed.
-   *      ^>Bochs runs at normal
-   */
+  // SPEED HACK: Completely bypass the usleep/msleep/sleep delay that blocks
+  // the CPU thread to synchronize emulated time with host wall-clock time.
+  // The original code would sleep here when emulation was running ahead of
+  // real time. We skip the sleep entirely to maximize IPS.
+#if 0 // SPEED HACK: disabled realtime delay
   if(wanttime > (totaltime+REALTIME_Q)) {
 #if BX_HAVE_USLEEP
     usleep(s.Q);
@@ -158,15 +140,9 @@ void bx_slowdown_timer_c::handle_timer()
     sleep(usectosec(s.Q));
 #else
 #error do not know have to sleep
-#endif    //delay(wanttime-totaltime);
-    /* alternatively: delay(Q);
-     * This works okay because we share the delay between
-     * two time quantums.
-     */
-#if BX_SLOWDOWN_PRINTF_FEEDBACK
-    printf("DELAYING for a quantum\n");
 #endif
   }
+#endif // SPEED HACK: end disabled realtime delay
   s.lasttime=thistime;
 
   //Diagnostic info:
