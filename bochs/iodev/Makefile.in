@@ -73,6 +73,7 @@ OBJS_THAT_CAN_BE_PLUGINS = \
   pic.o \
   pit.o \
   fw_cfg.o \
+  applesmc.o \
   serial.o \
   parallel.o \
   floppy.o \
@@ -105,7 +106,7 @@ plugins: @PLUGIN_TARGET_2@
 
 plugins_gcc: $(PLUGIN_OBJS:@PLUGIN_LIBNAME_TRANSFORMATION@)
 
-plugins_msvc: $(IODEV_DLL_TARGETS) bx_fw_cfg.dll bx_keyboard.dll bx_pit.dll bx_gameport.dll bx_serial.dll bx_floppy.dll
+plugins_msvc: $(IODEV_DLL_TARGETS) bx_fw_cfg.dll bx_applesmc.dll bx_keyboard.dll bx_pit.dll bx_gameport.dll bx_serial.dll bx_floppy.dll
 
 libiodev.a: $(NONPLUGIN_OBJS)
 	@RMCOMMAND@ libiodev.a
@@ -233,6 +234,10 @@ fw_cfg.o: fw_cfg.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h ../logio
  ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
  ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \
  ../gui/gui.h fw_cfg.h acpi_tables.h
+applesmc.o: applesmc.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h ../logio.h \
+ ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
+ ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \
+ ../gui/gui.h applesmc.h
 gameport.o: gameport.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h \
  ../logio.h ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
  ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \
@@ -374,6 +379,10 @@ fw_cfg.lo: fw_cfg.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h ../logi
  ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
  ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \
  ../gui/gui.h fw_cfg.h acpi_tables.h
+applesmc.lo: applesmc.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h ../logio.h \
+ ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
+ ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \
+ ../gui/gui.h applesmc.h
 gameport.lo: gameport.@CPP_SUFFIX@ iodev.h ../bochs.h ../config.h ../osdep.h \
  ../logio.h ../misc/bswap.h ../plugin.h ../extplugin.h ../param_names.h \
  ../memory/memory-bochs.h ../gui/siminterface.h ../gui/paramtree.h \

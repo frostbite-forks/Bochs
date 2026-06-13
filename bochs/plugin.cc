@@ -1045,6 +1045,7 @@ plugin_t bx_builtin_plugins[] = {
   BUILTIN_OPT_PLUGIN_ENTRY(speaker),
   BUILTIN_OPT_PLUGIN_ENTRY(extfpuirq),
   BUILTIN_OPT_PLUGIN_ENTRY(fw_cfg),
+  BUILTIN_OPT_PLUGIN_ENTRY(applesmc),
 #if BX_SUPPORT_PCI
   BUILTIN_OPTPCI_PLUGIN_ENTRY(acpi),
 #endif
