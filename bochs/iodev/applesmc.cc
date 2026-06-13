@@ -317,7 +317,7 @@ void bx_applesmc_c::write(Bit32u address, Bit32u value, unsigned io_len)
               BX_APPLESMC_THIS s.key[BX_APPLESMC_THIS s.read_pos] = (char)val;
               BX_APPLESMC_THIS s.status = APPLESMC_ST_ACK;
             } else if (BX_APPLESMC_THIS s.read_pos == 4) {
-              const AppleSMCData *d = find_key();
+              const AppleSMCData *d = BX_APPLESMC_THIS find_key();
               if (d != NULL) {
                 memcpy(BX_APPLESMC_THIS s.data, d->data, d->len);
                 BX_APPLESMC_THIS s.data_len = d->len;
