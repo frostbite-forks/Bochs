@@ -521,6 +521,9 @@ typedef struct {
 edit_opts_t start_options[] = {
   {"Plugin Control", "#plugins", false, {0, 0}},
   {"CPU", "cpu", false, {0, 0}},
+#if BX_CPU_LEVEL >= 4
+  {"CPUID", "cpuid", false, {0, 0}},
+#endif
   {"Memory", "memory", false, {0, 0}},
   {"Clock & CMOS", "clock_cmos", false, {0, 0}},
   {"PCI", "pci", false, {0, 0}},

@@ -341,19 +341,20 @@ static const char *startup_options_prompt =
 "3. Log options for all devices\n"
 "4. Log options for individual devices\n"
 "5. CPU options\n"
-"6. Memory options\n"
-"7. Clock & CMOS options\n"
-"8. PCI options\n"
-"9. Bochs Display & Interface options\n"
-"10. Keyboard & Mouse options\n"
-"11. Disk & Boot options\n"
-"12. Serial / Parallel options\n"
-"13. USB configuration\n"
-"14. Network card options\n"
-"15. Sound card options\n"
-"16. Other options\n"
+"6. CPUID options\n"
+"7. Memory options\n"
+"8. Clock & CMOS options\n"
+"9. PCI options\n"
+"10. Bochs Display & Interface options\n"
+"11. Keyboard & Mouse options\n"
+"12. Disk & Boot options\n"
+"13. Serial / Parallel options\n"
+"14. USB configuration\n"
+"15. Network card options\n"
+"16. Sound card options\n"
+"17. Other options\n"
 #if BX_PLUGINS
-"17. User-defined options\n"
+"18. User-defined options\n"
 #endif
 "\n"
 "Please choose one: [0] ";
@@ -514,7 +515,7 @@ int bx_text_config_interface(int menu)
         }
         break;
       case BX_CI_START_OPTS:
-        if (ask_uint(startup_options_prompt, "", 0, 16+BX_PLUGINS, 0, &choice, 10) < 0) return -1;
+        if (ask_uint(startup_options_prompt, "", 0, 17+BX_PLUGINS, 0, &choice, 10) < 0) return -1;
         switch (choice) {
           case 0: return 0;
           case 1: bx_plugin_ctrl(); break;
@@ -522,19 +523,20 @@ int bx_text_config_interface(int menu)
           case 4: bx_log_options(1); break;
           case 2: do_menu("log"); break;
           case 5: do_menu("cpu"); break;
-          case 6: do_menu("memory"); break;
-          case 7: do_menu("clock_cmos"); break;
-          case 8: do_menu("pci"); break;
-          case 9: do_menu("display"); break;
-          case 10: do_menu("keyboard_mouse"); break;
-          case 11: do_menu(BXPN_MENU_DISK); break;
-          case 12: do_menu("ports"); break;
-          case 13: do_menu("usb"); break;
-          case 14: do_menu("network"); break;
-          case 15: do_menu("sound"); break;
-          case 16: do_menu("misc"); break;
+          case 6: do_menu("cpuid"); break;
+          case 7: do_menu("memory"); break;
+          case 8: do_menu("clock_cmos"); break;
+          case 9: do_menu("pci"); break;
+          case 10: do_menu("display"); break;
+          case 11: do_menu("keyboard_mouse"); break;
+          case 12: do_menu(BXPN_MENU_DISK); break;
+          case 13: do_menu("ports"); break;
+          case 14: do_menu("usb"); break;
+          case 15: do_menu("network"); break;
+          case 16: do_menu("sound"); break;
+          case 17: do_menu("misc"); break;
 #if BX_PLUGINS
-          case 17: do_menu("user"); break;
+          case 18: do_menu("user"); break;
 #endif
           default: BAD_OPTION(menu, choice);
         }
