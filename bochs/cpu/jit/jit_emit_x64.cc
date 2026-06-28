@@ -83,6 +83,13 @@ void bx_jit_x64_emitter::mov_reg64_imm64(int dst, Bit64u imm)
   emit32((Bit32u)(imm >> 32));
 }
 
+void bx_jit_x64_emitter::mov_reg64_reg64(int dst, int src)
+{
+  emit8(rex_w_bit(dst, src));
+  emit8(0x89);
+  emit8(0xC0 | ((src & 7) << 3) | (dst & 7));
+}
+
 void bx_jit_x64_emitter::mov_reg64_mem64(int dst, int base, int disp32)
 {
   emit8(rex_w_bit(dst, base));

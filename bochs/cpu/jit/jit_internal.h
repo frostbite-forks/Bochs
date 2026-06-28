@@ -65,6 +65,7 @@ public:
   void pop_reg(int r);
 
   void mov_reg64_imm64(int dst, Bit64u imm);
+  void mov_reg64_reg64(int dst, int src);
   void mov_reg64_mem64(int dst, int base, int disp32);
   void mov_mem64_reg64(int base, int disp32, int src);
   void mov_reg32_mem32(int dst, int base, int disp32);

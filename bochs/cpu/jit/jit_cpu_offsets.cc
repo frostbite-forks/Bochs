@@ -10,6 +10,11 @@
 
 #if BX_SUPPORT_JIT
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+
 unsigned bx_jit_cpu_layout::gen_reg_erx(unsigned index)
 {
   return (unsigned)(offsetof(BX_CPU_C, gen_reg) + index * sizeof(bx_gen_reg_t) +
@@ -58,5 +63,9 @@ unsigned bx_jit_cpu_layout::cpu_mode_offset(void)
 {
   return (unsigned)offsetof(BX_CPU_C, cpu_mode);
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif
