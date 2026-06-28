@@ -12,16 +12,10 @@
 
 #if BX_SUPPORT_JIT
 
-static Bit64u bx_jit_resolve_laddr_read(bxInstruction_c *i, unsigned len)
+Bit64u BX_CPU_C::jit_resolve_laddr_load(bxInstruction_c *i, Bit32u len)
 {
   bx_address eaddr = BX_CPU_RESOLVE_ADDR(i);
   return (Bit64u) agen_read(i->seg(), eaddr, len);
-}
-
-static Bit64u bx_jit_resolve_laddr_write(bxInstruction_c *i, unsigned len)
-{
-  bx_address eaddr = BX_CPU_RESOLVE_ADDR(i);
-  return (Bit64u) agen_write(i->seg(), eaddr, len);
 }
 
 Bit32u BX_CPU_C::jit_mem_mov_load(bxInstruction_c *i, Bit32u op_size)
@@ -69,26 +63,27 @@ Bit32u BX_CPU_C::jit_mem_alu(bxInstruction_c *i, Bit32u op_size, Bit32u sub)
   RIP += i->ilen();
 
   bx_address eaddr = BX_CPU_RESOLVE_ADDR(i);
-  unsigned op = i->getIaOpcode();
 
   if (op_size == 8) {
     Bit64u op1 = read_RMW_virtual_qword(i->seg(), eaddr);
     Bit64u op2 = BX_READ_64BIT_REG(i->src1());
     Bit64u res = sub ? (op1 - op2) : (op1 + op2);
     write_RMW_linear_qword(res);
-    if (sub)
+    if (sub) {
       SET_FLAGS_OSZAPC_SUB_64(op1, op2, res);
-    else
+    } else {
       SET_FLAGS_OSZAPC_ADD_64(op1, op2, res);
+    }
   } else {
     Bit32u op1 = read_RMW_virtual_dword(i->seg(), eaddr);
     Bit32u op2 = BX_READ_32BIT_REG(i->src1());
     Bit32u res = sub ? (op1 - op2) : (op1 + op2);
     write_RMW_linear_dword(res);
-    if (sub)
+    if (sub) {
       SET_FLAGS_OSZAPC_SUB_32(op1, op2, res);
-    else
+    } else {
       SET_FLAGS_OSZAPC_ADD_32(op1, op2, res);
+    }
   }
 
   return jit_finish_insn(i);
@@ -126,11 +121,6 @@ Bit32u BX_CPU_C::jit_mem_logic(bxInstruction_c *i, Bit32u op_size, Bit32u op)
   }
 
   return jit_finish_insn(i);
-}
-
-Bit64u BX_CPU_C::jit_resolve_laddr_load(bxInstruction_c *i, Bit32u len)
-{
-  return bx_jit_resolve_laddr_read(i, len);
 }
 
 Bit32u BX_CPU_C::jit_mem_load_linear(bxInstruction_c *i, Bit64u laddr, Bit32u op_size)
