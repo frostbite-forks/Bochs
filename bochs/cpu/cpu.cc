@@ -182,7 +182,7 @@ void BX_CPU_C::cpu_loop(void)
     bxInstruction_c *i = entry->i;
 
 #if BX_SUPPORT_JIT
-    if (bx_jit_run_trace(BX_CPU_THIS_PTR, entry)) {
+    if (bx_jit_run_trace(BX_CPU_THIS, entry)) {
       BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
       if (BX_CPU_THIS_PTR async_event) {
         BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
@@ -260,7 +260,7 @@ void BX_CPU_C::cpu_run_trace(void)
   bxInstruction_c *i = entry->i;
 
 #if BX_SUPPORT_JIT
-  if (bx_jit_run_trace(BX_CPU_THIS_PTR, entry)) {
+  if (bx_jit_run_trace(BX_CPU_THIS, entry)) {
     if (BX_CPU_THIS_PTR async_event) {
       BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
     }
