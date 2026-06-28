@@ -18,27 +18,7 @@
 
 bool bx_jit_can_compile_cpu(BX_CPU_C *cpu)
 {
-#if BX_SMP_PROCESSORS > 1
   (void) cpu;
-  return false;
-#endif
-
-#if BX_DEBUGGER
-  if (bx_dbg.debugger_active) return false;
-#endif
-#if BX_GDBSTUB
-  if (bx_dbg.gdbstub_enabled) return false;
-#endif
-
-  unsigned mode = cpu->get_cpu_mode();
-  if (mode == BX_MODE_LONG_64) return false;
-#if BX_SUPPORT_VMX
-  if (cpu->in_vmx_guest) return false;
-#endif
-#if BX_SUPPORT_SVM
-  if (cpu->in_svm_guest) return false;
-#endif
-
   return true;
 }
 
@@ -182,6 +162,31 @@ Bit32u BX_CPU_C::jit_reg_imm(bxInstruction_c *i)
   return jit_finish_insn(i);
 }
 
+void BX_CPU_C::jit_set_flags_add32(Bit32u op1, Bit32u op2, Bit32u res)
+{
+  SET_FLAGS_OSZAPC_ADD_32(op1, op2, res);
+}
+
+void BX_CPU_C::jit_set_flags_sub32(Bit32u op1, Bit32u op2, Bit32u res)
+{
+  SET_FLAGS_OSZAPC_SUB_32(op1, op2, res);
+}
+
+void BX_CPU_C::jit_set_flags_logic32(Bit32u res)
+{
+  SET_FLAGS_OSZAPC_LOGIC_32(res);
+}
+
+void BX_CPU_C::jit_set_flags_inc32(Bit32u val, Bit32u res)
+{
+  SET_FLAGS_OSZAP_ADD_32(val, 0, res);
+}
+
+void BX_CPU_C::jit_set_flags_dec32(Bit32u val, Bit32u res)
+{
+  SET_FLAGS_OSZAP_SUB_32(val, 0, res);
+}
+
 Bit32u BX_CPU_C::jit_reg_unary(bxInstruction_c *i, Bit32u op)
 {
   Bit32u val = BX_READ_32BIT_REG(i->dst());
@@ -219,8 +224,6 @@ bool BX_CPU_C::jit_can_fast_mov(bxInstruction_c *i, bool is_load)
   if (i->seg() != BX_SEG_REG_DS && i->seg() != BX_SEG_REG_ES &&
       i->seg() != BX_SEG_REG_SS && i->seg() != BX_SEG_REG_CS)
     return false;
-
-  if (long64_mode()) return false;
 
   const bx_segment_reg_t *seg = &BX_CPU_THIS_PTR sregs[i->seg()];
   if (! seg->cache.valid) return false;
@@ -363,6 +366,56 @@ Bit32u bx_jit_fast_mov_store(BX_CPU_C *cpu, bxInstruction_c *i)
   return BX_CPU_C::jit_fast_mov_store(i);
 #else
   return cpu->jit_fast_mov_store(i);
+#endif
+}
+
+void bx_jit_set_flags_add(BX_CPU_C *cpu, Bit32u op1, Bit32u op2, Bit32u res)
+{
+#if BX_USE_CPU_SMF
+  (void) cpu;
+  BX_CPU_C::jit_set_flags_add32(op1, op2, res);
+#else
+  cpu->jit_set_flags_add32(op1, op2, res);
+#endif
+}
+
+void bx_jit_set_flags_sub(BX_CPU_C *cpu, Bit32u op1, Bit32u op2, Bit32u res)
+{
+#if BX_USE_CPU_SMF
+  (void) cpu;
+  BX_CPU_C::jit_set_flags_sub32(op1, op2, res);
+#else
+  cpu->jit_set_flags_sub32(op1, op2, res);
+#endif
+}
+
+void bx_jit_set_flags_logic(BX_CPU_C *cpu, Bit32u res)
+{
+#if BX_USE_CPU_SMF
+  (void) cpu;
+  BX_CPU_C::jit_set_flags_logic32(res);
+#else
+  cpu->jit_set_flags_logic32(res);
+#endif
+}
+
+void bx_jit_set_flags_inc(BX_CPU_C *cpu, Bit32u val, Bit32u res)
+{
+#if BX_USE_CPU_SMF
+  (void) cpu;
+  BX_CPU_C::jit_set_flags_inc32(val, res);
+#else
+  cpu->jit_set_flags_inc32(val, res);
+#endif
+}
+
+void bx_jit_set_flags_dec(BX_CPU_C *cpu, Bit32u val, Bit32u res)
+{
+#if BX_USE_CPU_SMF
+  (void) cpu;
+  BX_CPU_C::jit_set_flags_dec32(val, res);
+#else
+  cpu->jit_set_flags_dec32(val, res);
 #endif
 }
 

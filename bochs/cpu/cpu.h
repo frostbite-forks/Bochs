@@ -4561,6 +4561,23 @@ public: // for now...
   BX_SMF bool jit_can_fast_mov(bxInstruction_c *i, bool is_load);
   BX_SMF Bit32u jit_fast_mov_load(bxInstruction_c *i);
   BX_SMF Bit32u jit_fast_mov_store(bxInstruction_c *i);
+  BX_SMF void jit_set_flags_add32(Bit32u op1, Bit32u op2, Bit32u res);
+  BX_SMF void jit_set_flags_sub32(Bit32u op1, Bit32u op2, Bit32u res);
+  BX_SMF void jit_set_flags_logic32(Bit32u res);
+  BX_SMF void jit_set_flags_inc32(Bit32u val, Bit32u res);
+  BX_SMF void jit_set_flags_dec32(Bit32u val, Bit32u res);
+  BX_SMF Bit32u jit_mem_mov_load(bxInstruction_c *i, Bit32u op_size);
+  BX_SMF Bit32u jit_mem_mov_store(bxInstruction_c *i, Bit32u op_size);
+  BX_SMF Bit32u jit_mem_alu(bxInstruction_c *i, Bit32u op_size, Bit32u sub);
+  BX_SMF Bit32u jit_mem_logic(bxInstruction_c *i, Bit32u op_size, Bit32u op);
+  BX_SMF Bit64u jit_resolve_laddr_load(bxInstruction_c *i, Bit32u len);
+  BX_SMF Bit32u jit_mem_load_linear(bxInstruction_c *i, Bit64u laddr, Bit32u op_size);
+  BX_SMF Bit32u jit_mem_store_linear(bxInstruction_c *i, Bit64u laddr, Bit32u op_size);
+  BX_SMF void jit_set_flags_add64(Bit64u op1, Bit64u op2, Bit64u res);
+  BX_SMF void jit_set_flags_sub64(Bit64u op1, Bit64u op2, Bit64u res);
+  BX_SMF void jit_set_flags_logic64(Bit64u res);
+  BX_SMF void jit_set_flags_inc64(Bit64u val, Bit64u res);
+  BX_SMF void jit_set_flags_dec64(Bit64u val, Bit64u res);
 #endif
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS && BX_ENABLE_TRACE_LINKING
   BX_SMF void linkTrace(bxInstruction_c *i) BX_CPP_AttrRegparmN(1);

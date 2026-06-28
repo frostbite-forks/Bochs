@@ -83,6 +83,11 @@ public:
   void mov_mem32_reg32(int base, int disp32, int src);
   void mov_reg32_imm32(int dst, Bit32u imm);
   void add_reg32_imm8(int dst, Bit8u imm);
+  void sub_reg32_imm8(int dst, Bit8u imm);
+  void add_reg64_imm8(int dst, Bit8u imm);
+  void sub_reg64_imm8(int dst, Bit8u imm);
+  void add_mem32_imm8(int base, int disp32, Bit8u imm);
+  void add_mem64_imm8(int base, int disp32, Bit8u imm);
   void add_reg64_reg64(int dst, int src);
   void sub_reg64_reg64(int dst, int src);
   void and_reg64_reg64(int dst, int src);
@@ -118,6 +123,8 @@ bool bx_jit_compile_trace(BX_CPU_C *cpu, bxICacheEntry_c *entry, bx_jit_block *b
 extern Bit8u bx_jit_get_opcode_class(unsigned ia_opcode);
 extern bool bx_jit_opcode_supported(unsigned ia_opcode, bool mod_c0);
 extern bool bx_jit_opcode_use_helper(unsigned ia_opcode, bool mod_c0);
+extern bool bx_jit_opcode_64bit(unsigned ia_opcode);
+extern Bit32u bx_jit_insn_opsize(unsigned ia_opcode);
 
 extern bx_jit_code_buffer bx_jit_codebuf;
 

@@ -98,6 +98,16 @@ void BX_CPU_C::cpu_loop_debugger(void)
 
     bxICacheEntry_c *entry = getICacheEntry();
     bxInstruction_c *i = entry->i;
+
+#if BX_SUPPORT_JIT
+    if (bx_jit_run_trace(BX_CPU_THIS, entry)) {
+      if (BX_CPU_THIS_PTR trace)
+        debug_disasm_instruction(RIP - entry->i->ilen());
+      if (dbg_instruction_epilog()) return;
+      continue;
+    }
+#endif
+
     bxInstruction_c *last = i + (entry->tlen);
 
     for(;;) {
@@ -184,6 +194,12 @@ void BX_CPU_C::cpu_loop(void)
 #if BX_SUPPORT_JIT
     if (bx_jit_run_trace(BX_CPU_THIS, entry)) {
       BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
+#if BX_DEBUGGER
+      if (dbg_instruction_epilog()) return;
+#endif
+#if BX_GDBSTUB
+      if (gdbstub_instruction_epilog()) return;
+#endif
       if (BX_CPU_THIS_PTR async_event) {
         BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
         if (handleAsyncEvent()) return;
@@ -261,6 +277,12 @@ void BX_CPU_C::cpu_run_trace(void)
 
 #if BX_SUPPORT_JIT
   if (bx_jit_run_trace(BX_CPU_THIS, entry)) {
+#if BX_DEBUGGER
+    if (dbg_instruction_epilog()) return;
+#endif
+#if BX_GDBSTUB
+    if (gdbstub_instruction_epilog()) return;
+#endif
     if (BX_CPU_THIS_PTR async_event) {
       BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
     }

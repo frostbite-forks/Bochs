@@ -1007,7 +1007,7 @@ if test "$enable_jit" = 1; then
       else
         AC_DEFINE(BX_JIT_VERIFY, 0)
       fi
-      JIT_OBJS='jit/jit_codebuf.o jit/jit_cache.o jit/jit_cpu_offsets.o jit/jit_emit_x64.o jit/jit_helpers.o jit/jit_opcode_table.o jit/jit_translate.o jit/jit_run.o'
+      JIT_OBJS='jit/jit_codebuf.o jit/jit_cache.o jit/jit_cpu_offsets.o jit/jit_emit_x64.o jit/jit_helpers.o jit/jit_mem.o jit/jit_opcode_table.o jit/jit_translate.o jit/jit_run.o'
       ;;
     *)
       AC_MSG_RESULT(no)

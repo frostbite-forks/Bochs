@@ -137,6 +137,48 @@ void bx_jit_x64_emitter::add_reg32_imm8(int dst, Bit8u imm)
   emit8(imm);
 }
 
+void bx_jit_x64_emitter::sub_reg32_imm8(int dst, Bit8u imm)
+{
+  if (dst >= 8) emit8(0x41);
+  emit8(0x83);
+  emit8(0xE8 | (dst & 7));
+  emit8(imm);
+}
+
+void bx_jit_x64_emitter::add_reg64_imm8(int dst, Bit8u imm)
+{
+  emit8(rex_w_bit(dst, 0));
+  emit8(0x83);
+  emit8(0xC0 | (dst & 7));
+  emit8(imm);
+}
+
+void bx_jit_x64_emitter::sub_reg64_imm8(int dst, Bit8u imm)
+{
+  emit8(rex_w_bit(dst, 0));
+  emit8(0x83);
+  emit8(0xE8 | (dst & 7));
+  emit8(imm);
+}
+
+void bx_jit_x64_emitter::add_mem32_imm8(int base, int disp32, Bit8u imm)
+{
+  if (base >= 8) emit8(0x41);
+  emit8(0x83);
+  emit8(0x80 | (base & 7));
+  emit32(disp32);
+  emit8(imm);
+}
+
+void bx_jit_x64_emitter::add_mem64_imm8(int base, int disp32, Bit8u imm)
+{
+  emit8(rex_w_bit(0, base));
+  emit8(0x83);
+  emit8(0x80 | (base & 7));
+  emit32(disp32);
+  emit8(imm);
+}
+
 void bx_jit_x64_emitter::add_reg64_reg64(int dst, int src)
 {
   emit8(rex_w_bit(dst, src));
