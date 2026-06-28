@@ -16,6 +16,17 @@ struct bxICacheEntry_c;
 
 #define BX_JIT_CACHE_SIZE 65536
 
+enum {
+  BX_JIT_OP_NONE = 0,
+  BX_JIT_OP_ALU_RM,
+  BX_JIT_OP_LOGIC_RM,
+  BX_JIT_OP_MOV_RM,
+  BX_JIT_OP_IMM_RM,
+  BX_JIT_OP_UNARY_RM,
+  BX_JIT_OP_BRANCH,
+  BX_JIT_OP_NOP,
+};
+
 // Compiled trace entry point. Returns 0 on success, non-zero if cpu->async_event is set.
 typedef Bit32u (*bx_jit_trace_func_t)(BX_CPU_C *cpu);
 

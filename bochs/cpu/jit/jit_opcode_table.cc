@@ -8,17 +8,6 @@
 
 #if BX_SUPPORT_JIT
 
-enum {
-  BX_JIT_OP_NONE = 0,
-  BX_JIT_OP_ALU_RM,
-  BX_JIT_OP_LOGIC_RM,
-  BX_JIT_OP_MOV_RM,
-  BX_JIT_OP_IMM_RM,
-  BX_JIT_OP_UNARY_RM,
-  BX_JIT_OP_BRANCH,
-  BX_JIT_OP_NOP,
-};
-
 static Bit8u bx_jit_opcode_class_table[BX_IA_LAST];
 
 static void bx_jit_init_opcode_table(void)
