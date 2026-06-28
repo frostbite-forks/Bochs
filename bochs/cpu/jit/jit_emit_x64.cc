@@ -8,7 +8,7 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit_internal.h"
+#include "jit_internal.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define BX_JIT_CPU_ARG_REG 1  // RCX

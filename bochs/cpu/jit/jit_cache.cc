@@ -8,8 +8,8 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit.h"
-#include "jit/jit_internal.h"
+#include "jit.h"
+#include "jit_internal.h"
 
 static bx_jit_block bx_jit_cache[BX_JIT_CACHE_SIZE];
 

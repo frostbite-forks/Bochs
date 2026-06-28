@@ -8,7 +8,7 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit_internal.h"
+#include "jit_internal.h"
 
 bx_jit_code_buffer bx_jit_codebuf;
 

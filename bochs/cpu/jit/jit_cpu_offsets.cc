@@ -10,7 +10,7 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit_cpu_offsets.h"
+#include "jit_cpu_offsets.h"
 
 unsigned bx_jit_cpu_layout::gen_reg_erx(unsigned index)
 {

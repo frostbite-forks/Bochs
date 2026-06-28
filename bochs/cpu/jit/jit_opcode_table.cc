@@ -8,7 +8,7 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit_internal.h"
+#include "jit_internal.h"
 #include "decoder/ia_opcodes.h"
 
 enum {

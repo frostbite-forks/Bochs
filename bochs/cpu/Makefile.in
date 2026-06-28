@@ -171,7 +171,7 @@ $(OBJS): $(BX_INCLUDES)
 $(OBJS64): $(BX_INCLUDES)
 
 jit/%.o: jit/%.@CPP_SUFFIX@
-	$(CXX) @DASH@c $(BX_INCDIRS) $(CPPFLAGS) $(CXXFLAGS) @CXXFP@$< @OFP@$@
+	$(CXX) @DASH@c $(BX_INCDIRS) -I. -I$(srcdir) $(CPPFLAGS) $(CXXFLAGS) @CXXFP@$< @OFP@$@
 
 jit/%.o: $(BX_INCLUDES)
 

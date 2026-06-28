@@ -11,8 +11,8 @@
 
 #if BX_SUPPORT_JIT
 
-#include "jit/jit.h"
-#include "jit/jit_internal.h"
+#include "jit.h"
+#include "jit_internal.h"
 
 bool bx_jit_run_trace(BX_CPU_C *cpu, bxICacheEntry_c *entry)
 {

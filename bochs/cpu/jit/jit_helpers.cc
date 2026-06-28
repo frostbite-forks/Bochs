@@ -9,8 +9,8 @@
 #include "cpu.h"
 #define LOG_THIS BX_CPU_THIS_PTR
 
-#include "jit/jit.h"
-#include "jit/jit_internal.h"
+#include "jit.h"
+#include "jit_internal.h"
 #include "lazy_flags.h"
 
 #if BX_SUPPORT_JIT
