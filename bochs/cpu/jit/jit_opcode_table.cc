@@ -46,7 +46,6 @@ static void bx_jit_init_opcode_table(void)
   JIT_LOGIC(BX_IA_XOR_GdEd); JIT_LOGIC(BX_IA_XOR_EdGd);
 
   JIT_MOV(BX_IA_MOV_Op32_GdEd); JIT_MOV(BX_IA_MOV_Op32_EdGd);
-  JIT_MOV(BX_IA_MOV_GdEd); JIT_MOV(BX_IA_MOV_EdGd);
   JIT_MOV(BX_IA_MOV_EdId);
 
   JIT_IMM(BX_IA_ADD_EdId); JIT_IMM(BX_IA_ADD_EAXId);
