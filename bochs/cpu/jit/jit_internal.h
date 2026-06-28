@@ -9,6 +9,9 @@
 
 #if BX_SUPPORT_JIT
 
+class BX_CPU_C;
+struct bxICacheEntry_c;
+
 #include "jit_cpu_offsets.h"
 
 #define BX_JIT_CACHE_SIZE 65536
