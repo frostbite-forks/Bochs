@@ -32,6 +32,10 @@
 
 #include "decoder/ia_opcodes.h"
 
+#if BX_SUPPORT_JIT
+#include "jit/jit.h"
+#endif
+
 bxPageWriteStampTable pageWriteStampTable;
 
 extern int fetchDecode32(const Bit8u *fetchPtr, bool is_32, bxInstruction_c *i, unsigned remainingInPage);
@@ -47,6 +51,9 @@ void flushICaches(void)
   }
 
   pageWriteStampTable.resetWriteStamps();
+#if BX_SUPPORT_JIT
+  bx_jit_flush_all();
+#endif
 }
 
 void handleSMC(bx_phy_address pAddr, Bit32u mask)
@@ -57,6 +64,9 @@ void handleSMC(bx_phy_address pAddr, Bit32u mask)
     BX_CPU(i)->async_event |= BX_ASYNC_EVENT_STOP_TRACE;
     BX_CPU(i)->iCache.handleSMC(pAddr, mask);
   }
+#if BX_SUPPORT_JIT
+  bx_jit_flush_page(pAddr, mask);
+#endif
 }
 
 void flushSMC(bxICacheEntry_c *e)

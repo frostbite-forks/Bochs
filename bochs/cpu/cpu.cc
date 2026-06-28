@@ -28,6 +28,10 @@
 #include "pc_system.h"
 #include "cpustats.h"
 
+#if BX_SUPPORT_JIT
+#include "jit/jit.h"
+#endif
+
 #include "bx_debug/debug.h"
 
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS
@@ -177,6 +181,17 @@ void BX_CPU_C::cpu_loop(void)
     bxICacheEntry_c *entry = getICacheEntry();
     bxInstruction_c *i = entry->i;
 
+#if BX_SUPPORT_JIT
+    if (bx_jit_run_trace(BX_CPU_THIS_PTR, entry)) {
+      BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
+      if (BX_CPU_THIS_PTR async_event) {
+        BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
+        if (handleAsyncEvent()) return;
+      }
+      continue;
+    }
+#endif
+
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS
     for(;;) {
       // want to allow changing of the instruction inside instrumentation callback
@@ -243,6 +258,15 @@ void BX_CPU_C::cpu_run_trace(void)
 
   bxICacheEntry_c *entry = getICacheEntry();
   bxInstruction_c *i = entry->i;
+
+#if BX_SUPPORT_JIT
+  if (bx_jit_run_trace(BX_CPU_THIS_PTR, entry)) {
+    if (BX_CPU_THIS_PTR async_event) {
+      BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
+    }
+    return;
+  }
+#endif
 
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS
   // want to allow changing of the instruction inside instrumentation callback

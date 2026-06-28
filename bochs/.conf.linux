@@ -2,6 +2,9 @@
 #
 # .conf.linux
 #
+# On x86-64 hosts, --enable-jit turns on the MVP CPU JIT. JIT is disabled at
+# runtime when the internal debugger or gdb stub is active.
+#
 if test $# = 0; then
   which_config=plugins
 else
@@ -31,6 +34,7 @@ case $which_config in
     ./configure --enable-sb16 \
                 --enable-ne2000 \
                 --enable-all-optimizations \
+                --enable-jit \
                 --enable-cpu-level=6 \
                 --enable-3dnow \
                 --enable-x86-64 \
@@ -65,6 +69,7 @@ case $which_config in
     ./configure --enable-sb16 \
                 --enable-ne2000 \
                 --enable-all-optimizations \
+                --enable-jit \
                 --enable-cpu-level=6 \
                 --enable-3dnow \
                 --enable-x86-64 \

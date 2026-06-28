@@ -1,0 +1,10 @@
+# Minimal benchmark bochsrc - adjust rom/ paths for your install
+cpu: model=corei7_skylake_x, ips=4000000
+memory: guest=32, host=32
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+boot: floppy
+floppy: 1_44=bench/testfloppy.img, status=inserted
+display_library: nogui
+log: bench/bench.log
+megs: 32

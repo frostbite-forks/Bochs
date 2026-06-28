@@ -963,6 +963,65 @@ else
   AC_DEFINE(BX_ENABLE_TRACE_LINKING, 0)
 fi
 
+AC_MSG_CHECKING(for x86-64 host JIT support)
+AC_ARG_ENABLE(jit,
+  AS_HELP_STRING([--enable-jit], [enable x86-64 host JIT for hot CPU traces (no)]),
+  [if test "$enableval" = yes; then
+    AC_MSG_RESULT(yes)
+    enable_jit=1
+   else
+    AC_MSG_RESULT(no)
+    enable_jit=0
+   fi],
+  [
+    AC_MSG_RESULT(no)
+    enable_jit=0
+    ]
+  )
+
+AC_MSG_CHECKING(for JIT shadow verify mode)
+AC_ARG_ENABLE(jit-verify,
+  AS_HELP_STRING([--enable-jit-verify], [compare JIT vs interpreter execution (no)]),
+  [if test "$enableval" = yes; then
+    AC_MSG_RESULT(yes)
+    enable_jit_verify=1
+   else
+    AC_MSG_RESULT(no)
+    enable_jit_verify=0
+   fi],
+  [
+    AC_MSG_RESULT(no)
+    enable_jit_verify=0
+    ]
+  )
+
+JIT_OBJS=""
+if test "$enable_jit" = 1; then
+  AC_MSG_CHECKING(for x86-64 host to compile JIT)
+  case $host_cpu in
+    x86_64|amd64)
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(BX_SUPPORT_JIT, 1)
+      if test "$enable_jit_verify" = 1; then
+        AC_DEFINE(BX_JIT_VERIFY, 1)
+      else
+        AC_DEFINE(BX_JIT_VERIFY, 0)
+      fi
+      JIT_OBJS='jit/jit_codebuf.o jit/jit_cache.o jit/jit_cpu_offsets.o jit/jit_emit_x64.o jit/jit_helpers.o jit/jit_opcode_table.o jit/jit_translate.o jit/jit_run.o'
+      ;;
+    *)
+      AC_MSG_RESULT(no)
+      AC_MSG_WARN([--enable-jit ignored: host is not x86-64])
+      AC_DEFINE(BX_SUPPORT_JIT, 0)
+      AC_DEFINE(BX_JIT_VERIFY, 0)
+      ;;
+  esac
+else
+  AC_DEFINE(BX_SUPPORT_JIT, 0)
+  AC_DEFINE(BX_JIT_VERIFY, 0)
+fi
+AC_SUBST(JIT_OBJS)
+
 READLINE_LIB=""
 rl_without_curses_ok=no
 rl_with_curses_ok=no

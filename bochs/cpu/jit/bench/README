@@ -1,0 +1,47 @@
+# Bochs JIT benchmark harness
+
+Measure interpreter vs JIT performance on the same workload.
+
+## Build baselines
+
+```sh
+cd bochs
+./configure --enable-all-optimizations --enable-show-ips --enable-x86-64 \
+            --with-nogui --enable-jit --enable-cpu-level=6
+make
+```
+
+Interpreter-only baseline (disable JIT at configure time):
+
+```sh
+./configure --enable-all-optimizations --enable-show-ips --enable-x86-64 \
+            --with-nogui --enable-cpu-level=6
+make
+```
+
+Shadow-verify build (compare JIT vs interpreter per trace):
+
+```sh
+./configure --enable-all-optimizations --enable-show-ips --enable-x86-64 \
+            --with-nogui --enable-jit --enable-jit-verify --enable-cpu-level=6
+make
+```
+
+## Run
+
+Use any `.bochsrc` that boots a guest. Bochs logs IPS when `--enable-show-ips` is on.
+Compare startup log lines for optimization and JIT status.
+
+```sh
+./bochs -f bench/bochsrc.txt -q
+```
+
+Record wall time and IPS from the log for:
+- Integer-heavy guest loops (DOS/BIOS test or Linux `yes >/dev/null`)
+- Memory copy workloads
+- Full boot (optional; I/O dominated)
+
+## Windows
+
+Use MSYS2/MinGW or cross-config from `.conf.win64-cross-mingw32` and add
+`--enable-jit` to the configure line.

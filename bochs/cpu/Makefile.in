@@ -45,6 +45,7 @@ OBJS = \
 	cpu.o \
 	event.o \
 	icache.o \
+	@JIT_OBJS@ \
 	decoder/fetchdecode32.o \
 	decoder/fetchdecode_opmap_0f38.o \
 	decoder/fetchdecode_opmap_0f3a.o \
@@ -169,10 +170,16 @@ $(OBJS): $(BX_INCLUDES)
 
 $(OBJS64): $(BX_INCLUDES)
 
+jit/%.o: jit/%.@CPP_SUFFIX@
+	$(CXX) @DASH@c $(BX_INCDIRS) $(CPPFLAGS) $(CXXFLAGS) @CXXFP@$< @OFP@$@
+
+jit/%.o: $(BX_INCLUDES)
+
 clean:
 	@RMCOMMAND@ *.o
 	@RMCOMMAND@ *.a
 	@RMCOMMAND@ decoder@SLASH@*.o
+	@RMCOMMAND@ jit@SLASH@*.o
 
 dist-clean: clean
 	@RMCOMMAND@ Makefile

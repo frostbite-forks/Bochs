@@ -22,6 +22,9 @@
 #include "bxversion.h"
 #include "param_names.h"
 #include "cpu/cpu.h"
+#if BX_SUPPORT_JIT
+#include "cpu/jit/jit.h"
+#endif
 #include "iodev/iodev.h"
 #include "pc_system.h"
 #include "iodev/hdimage/hdimage.h"
@@ -1258,6 +1261,11 @@ void bx_init_hardware()
   BX_INFO(("  RepeatSpeedups support: %s", BX_SUPPORT_REPEAT_SPEEDUPS?"yes":"no"));
   BX_INFO(("  Fast function calls: %s", BX_FAST_FUNC_CALL?"yes":"no"));
   BX_INFO(("  Handlers Chaining speedups: %s", BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS?"yes":"no"));
+#if BX_SUPPORT_JIT
+  BX_INFO(("  x86-64 JIT: yes%s", BX_JIT_VERIFY ? " (verify mode)" : ""));
+#else
+  BX_INFO(("  x86-64 JIT: no"));
+#endif
   BX_INFO(("Devices configuration"));
   BX_INFO(("  PCI support: %s", BX_SUPPORT_PCI?"i440FX i430FX i440BX":"no"));
 #if BX_NETWORKING
@@ -1376,6 +1384,10 @@ void bx_init_hardware()
   }
 #endif
 
+#if BX_SUPPORT_JIT
+  bx_jit_init();
+#endif
+
   DEV_init_devices();
   // unload optional plugins which are unused and marked for removal
   SIM->opt_plugin_ctrl("*", 0);
@@ -1458,6 +1470,10 @@ int bx_atexit(void)
 
   for (int cpu=0; cpu<BX_SMP_PROCESSORS; cpu++)
     if (BX_CPU(cpu)) BX_CPU(cpu)->atexit();
+
+#if BX_SUPPORT_JIT
+  bx_jit_cleanup();
+#endif
 
   BX_MEM(0)->cleanup_memory();
 

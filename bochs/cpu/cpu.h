@@ -1302,6 +1302,10 @@ public: // for now...
   const volatile Bit8u *cpuloop_stack_anchor = NULL;
 #endif
 
+#if BX_SUPPORT_JIT
+  bool jit_invocation;
+#endif
+
   // Boundaries of current code page, based on EIP
   bx_address eipPageBias;
   Bit32u     eipPageWindowSize;
@@ -4546,6 +4550,18 @@ public: // for now...
   BX_SMF bxICacheEntry_c *serveICacheMiss(Bit32u eipBiased, bx_phy_address pAddr);
   BX_SMF bxICacheEntry_c* getICacheEntry(void);
   BX_SMF bool mergeTraces(bxICacheEntry_c *entry, bxInstruction_c *i, bx_phy_address pAddr);
+#if BX_SUPPORT_JIT
+  BX_SMF Bit32u jit_invoke_one(bxInstruction_c *i);
+  BX_SMF Bit32u jit_finish_insn(bxInstruction_c *i);
+  BX_SMF Bit32u jit_reg_alu(bxInstruction_c *i, Bit32u sub);
+  BX_SMF Bit32u jit_reg_logic(bxInstruction_c *i, Bit32u op);
+  BX_SMF Bit32u jit_reg_mov(bxInstruction_c *i);
+  BX_SMF Bit32u jit_reg_imm(bxInstruction_c *i);
+  BX_SMF Bit32u jit_reg_unary(bxInstruction_c *i, Bit32u op);
+  BX_SMF bool jit_can_fast_mov(bxInstruction_c *i, bool is_load);
+  BX_SMF Bit32u jit_fast_mov_load(bxInstruction_c *i);
+  BX_SMF Bit32u jit_fast_mov_store(bxInstruction_c *i);
+#endif
 #if BX_SUPPORT_HANDLERS_CHAINING_SPEEDUPS && BX_ENABLE_TRACE_LINKING
   BX_SMF void linkTrace(bxInstruction_c *i) BX_CPP_AttrRegparmN(1);
 #endif
@@ -5985,6 +6001,7 @@ class bxInstruction_c;
 
 #define BX_NEXT_TRACE(i) {                             \
   BX_COMMIT_INSTRUCTION(i);                            \
+  if (BX_CPU_THIS_PTR jit_invocation) return;          \
   return;                                              \
 }
 
@@ -5994,12 +6011,14 @@ class bxInstruction_c;
 
 #define BX_LINK_TRACE(i) {                             \
   BX_COMMIT_INSTRUCTION(i);                            \
+  if (BX_CPU_THIS_PTR jit_invocation) return;          \
   return linkTrace(i);                                 \
 }
 
 #define BX_NEXT_INSTR(i) {                             \
   BX_COMMIT_INSTRUCTION(i);                            \
   if (BX_CPU_THIS_PTR async_event) return;             \
+  if (BX_CPU_THIS_PTR jit_invocation) return;          \
   ++i;                                                 \
   BX_EXECUTE_INSTRUCTION(i);                           \
 }

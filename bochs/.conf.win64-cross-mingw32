@@ -2,6 +2,10 @@
 #
 # Example script for configuring and compiling Bochs on Linux for Windows.
 #
+# Requires an x86-64 Linux build host for --enable-jit (cross target is still
+# x86_64-mingw32). JIT is disabled at runtime when the internal debugger or
+# gdb stub is active.
+#
 
 CC="x86_64-w64-mingw32-gcc"
 CXX="x86_64-w64-mingw32-g++"
@@ -21,6 +25,7 @@ export DLLTOOL
             --enable-sb16 \
             --enable-ne2000 \
             --enable-all-optimizations \
+            --enable-jit \
             --enable-static-link \
             --enable-cpu-level=6 \
             --enable-3dnow \

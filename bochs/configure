@@ -932,6 +932,7 @@ INSTRUMENT_VAR
 INSTRUMENT_DIR
 READLINE_LIB
 IODEBUG_OBJS
+JIT_OBJS
 GDBSTUB_VAR
 DEBUGGER_VAR
 NO_FLEX_YACC
@@ -1798,6 +1799,8 @@ Optional Features:
                           is on)
   --enable-all-optimizations
                           compile in all possible optimizations (no)
+  --enable-jit            enable x86-64 host JIT for hot CPU traces (no)
+  --enable-jit-verify     compare JIT vs interpreter execution (no)
   --enable-readline       use readline library, if available (no)
   --enable-instrumentation=instrument-dir
                           compile in support for instrumentation (no)
@@ -24169,6 +24172,79 @@ if test "$enable_trace_linking" = 1; then
 else
   printf "%s\n" "#define BX_ENABLE_TRACE_LINKING 0" >>confdefs.h
 
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for x86-64 host JIT support" >&5
+printf %s "checking for x86-64 host JIT support... " >&6; }
+if test ${enable_jit+y}
+then :
+  enableval=$enable_jit; if test "$enableval" = yes; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    enable_jit=1
+   else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    enable_jit=0
+   fi
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    enable_jit=0
+   ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for JIT shadow verify mode" >&5
+printf %s "checking for JIT shadow verify mode... " >&6; }
+if test ${enable_jit_verify+y}
+then :
+  enableval=$enable_jit_verify; if test "$enableval" = yes; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    enable_jit_verify=1
+   else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    enable_jit_verify=0
+   fi
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    enable_jit_verify=0
+   ;;
+esac
+fi
+
+JIT_OBJS=""
+if test "$enable_jit" = 1; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for x86-64 host to compile JIT" >&5
+printf %s "checking for x86-64 host to compile JIT... " >&6; }
+  case $host_cpu in
+    x86_64|amd64)
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+      printf "%s\n" "#define BX_SUPPORT_JIT 1" >>confdefs.h
+      if test "$enable_jit_verify" = 1; then
+        printf "%s\n" "#define BX_JIT_VERIFY 1" >>confdefs.h
+      else
+        printf "%s\n" "#define BX_JIT_VERIFY 0" >>confdefs.h
+      fi
+      JIT_OBJS='jit/jit_codebuf.o jit/jit_cache.o jit/jit_cpu_offsets.o jit/jit_emit_x64.o jit/jit_helpers.o jit/jit_opcode_table.o jit/jit_translate.o jit/jit_run.o'
+      ;;
+    *)
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      as_fn_warn ${LINENO} "--enable-jit ignored: host is not x86-64"
+      printf "%s\n" "#define BX_SUPPORT_JIT 0" >>confdefs.h
+      printf "%s\n" "#define BX_JIT_VERIFY 0" >>confdefs.h
+      ;;
+  esac
+else
+  printf "%s\n" "#define BX_SUPPORT_JIT 0" >>confdefs.h
+  printf "%s\n" "#define BX_JIT_VERIFY 0" >>confdefs.h
 fi
 
 READLINE_LIB=""

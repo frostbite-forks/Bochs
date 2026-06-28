@@ -915,6 +915,9 @@ void BX_CPU_C::reset(unsigned source)
 #endif
 
   BX_CPU_THIS_PTR speculative_rsp = false;
+#if BX_SUPPORT_JIT
+  BX_CPU_THIS_PTR jit_invocation = false;
+#endif
 
   /* CS (Code Segment) and descriptor cache */
   /* Note: on a real cpu, CS initially points to upper memory.  After
