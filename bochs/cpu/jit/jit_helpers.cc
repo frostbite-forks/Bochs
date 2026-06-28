@@ -51,7 +51,7 @@ bool bx_jit_trace_jitable(BX_CPU_C *cpu, bxICacheEntry_c *entry)
 
   for (; i < last; i++) {
     if (i->getIaOpcode() == BX_IA_ERROR) return false;
-    if (i->lockRepUsed()) return false;
+    if (i->lockRepUsedValue() != 0) return false;
     if (! bx_jit_opcode_supported(i->getIaOpcode(), i->modC0() != 0))
       return false;
   }
@@ -95,10 +95,11 @@ Bit32u BX_CPU_C::jit_reg_alu(bxInstruction_c *i, Bit32u sub)
 
   BX_WRITE_32BIT_REGZ(i->dst(), res);
 
-  if (sub)
+  if (sub) {
     SET_FLAGS_OSZAPC_SUB_32(op1, op2, res);
-  else
+  } else {
     SET_FLAGS_OSZAPC_ADD_32(op1, op2, res);
+  }
 
   BX_CLEAR_64BIT_HIGH(i->dst());
   return jit_finish_insn(i);

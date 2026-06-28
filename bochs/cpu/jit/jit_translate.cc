@@ -6,7 +6,6 @@
 
 #define NEED_CPU_REG_SHORTCUTS 1
 #include "jit_include.h"
-#include "decoder/ia_opcodes.h"
 
 #if BX_SUPPORT_JIT
 

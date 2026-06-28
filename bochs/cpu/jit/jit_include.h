@@ -12,6 +12,7 @@
 #if BX_SUPPORT_JIT
 
 #include "cpu.h"
+#include "decoder/ia_opcodes.h"
 #include "jit.h"
 #include "jit_internal.h"
 
