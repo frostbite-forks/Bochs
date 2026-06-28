@@ -4,11 +4,9 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-#include "bochs.h"
+#include "jit_include.h"
 
 #if BX_SUPPORT_JIT
-
-#include "jit_internal.h"
 
 bx_jit_code_buffer bx_jit_codebuf;
 

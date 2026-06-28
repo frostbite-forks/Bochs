@@ -5,12 +5,10 @@
 /////////////////////////////////////////////////////////////////////////
 
 #define NEED_CPU_REG_SHORTCUTS 1
-#include "bochs.h"
-#include "cpu.h"
+#include "jit_include.h"
+#include "jit_cpu_offsets.h"
 
 #if BX_SUPPORT_JIT
-
-#include "jit_cpu_offsets.h"
 
 unsigned bx_jit_cpu_layout::gen_reg_erx(unsigned index)
 {

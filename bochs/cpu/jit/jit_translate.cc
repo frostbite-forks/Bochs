@@ -5,14 +5,10 @@
 /////////////////////////////////////////////////////////////////////////
 
 #define NEED_CPU_REG_SHORTCUTS 1
-#include "bochs.h"
-#include "cpu.h"
+#include "jit_include.h"
+#include "decoder/ia_opcodes.h"
 
 #if BX_SUPPORT_JIT
-
-#include "jit.h"
-#include "jit_internal.h"
-#include "decoder/ia_opcodes.h"
 
 extern "C" {
 Bit32u bx_jit_invoke_one(BX_CPU_C *cpu, bxInstruction_c *i);

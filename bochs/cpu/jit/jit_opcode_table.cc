@@ -4,12 +4,10 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-#include "bochs.h"
+#include "jit_include.h"
+#include "decoder/ia_opcodes.h"
 
 #if BX_SUPPORT_JIT
-
-#include "jit_internal.h"
-#include "decoder/ia_opcodes.h"
 
 enum {
   BX_JIT_OP_NONE = 0,

@@ -5,14 +5,10 @@
 /////////////////////////////////////////////////////////////////////////
 
 #define NEED_CPU_REG_SHORTCUTS 1
-#include "bochs.h"
-#include "cpu.h"
+#include "jit_include.h"
 #define LOG_THIS BX_CPU_THIS_PTR
 
 #if BX_SUPPORT_JIT
-
-#include "jit.h"
-#include "jit_internal.h"
 
 bool bx_jit_run_trace(BX_CPU_C *cpu, bxICacheEntry_c *entry)
 {
