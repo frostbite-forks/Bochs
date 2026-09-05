@@ -4100,13 +4100,13 @@ void bx_nvriva_c::execute_tex_tri(nv4_channel* ch, Bit32u cls, Bit32u method, Bi
     ch->d3d_control0 = param;
   } else if (method == 0x0c6) {
     ch->d3d_fog_color = param;
-  } else if (method >= 0x100 && method < 0x200) {
+  } else if (method >= 0x180 && method < 0x1c0) {
+    d3d_draw_primitive(ch, param, false);
+  } else if (method >= 0x100 && method < 0x180) {
     Bit32u vtx_idx = (method - 0x100) / 8;
     Bit32u comp = (method - 0x100) % 8;
     if (vtx_idx < 16 && comp < 8)
       ch->d3d_tlvertex[vtx_idx][comp] = nv4_uint32_as_float(param);
-  } else if (method >= 0x180 && method < 0x200) {
-    d3d_draw_primitive(ch, param, false);
   }
 }
 
@@ -4153,13 +4153,13 @@ void bx_nvriva_c::execute_mtex_tri(nv4_channel* ch, Bit32u cls, Bit32u method, B
     ch->d3d_control2 = param;
   } else if (method == 0x0d2) {
     ch->d3d_fog_color = param;
-  } else if (method >= 0x100 && method < 0x1a0) {
+  } else if (method >= 0x150 && method < 0x180) {
+    d3d_draw_primitive(ch, param, true);
+  } else if (method >= 0x100 && method < 0x150) {
     Bit32u vtx_idx = (method - 0x100) / 0x0a;
     Bit32u comp = (method - 0x100) % 0x0a;
     if (vtx_idx < 8 && comp < 10)
       ch->d3d_tlmtvertex[vtx_idx][comp] = nv4_uint32_as_float(param);
-  } else if (method >= 0x150 && method < 0x1c0) {
-    d3d_draw_primitive(ch, param, true);
   }
 }
 
