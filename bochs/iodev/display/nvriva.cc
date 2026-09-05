@@ -2500,7 +2500,7 @@ void bx_nvriva_c::fifo_process(Bit32u chid)
   }
   BX_NVRIVA_THIS fifo_cache1_dma_push |= 0x100;
   if (BX_NVRIVA_THIS fifo_cache1_dma_instance == 0) {
-    BX_PANIC(("fifo: DMA instance = 0"));
+    BX_DEBUG(("fifo: DMA instance = 0 for channel %d, skipping", chid));
     return;
   }
   nv4_channel* ch = &BX_NVRIVA_THIS chs[chid];
