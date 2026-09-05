@@ -46,6 +46,7 @@ extern "C" {
 #define BX_PLUGIN_VGA       "vga"
 #define BX_PLUGIN_CIRRUS    "svga_cirrus"
 #define BX_PLUGIN_GEFORCE   "geforce"
+#define BX_PLUGIN_NVRIVA    "nvriva"
 #define BX_PLUGIN_FLOPPY    "floppy"
 #define BX_PLUGIN_PARALLEL  "parallel"
 #define BX_PLUGIN_SERIAL    "serial"
