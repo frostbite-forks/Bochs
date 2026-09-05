@@ -458,6 +458,72 @@ void bx_nvriva_c::after_restore_state(void)
   }
 }
 
+void bx_nvriva_c::redraw_area(unsigned x0, unsigned y0,
+                               unsigned width, unsigned height)
+{
+  redraw_area_d((Bit32s)x0, (Bit32s)y0, width, height);
+}
+
+void bx_nvriva_c::redraw_area_nd(Bit32u offset, Bit32u width, Bit32u height)
+{
+  if (BX_NVRIVA_THIS svga_pitch != 0) {
+    Bit32u redraw_x = offset % BX_NVRIVA_THIS svga_pitch / (BX_NVRIVA_THIS svga_bpp >> 3);
+    Bit32u redraw_y = offset / BX_NVRIVA_THIS svga_pitch;
+    BX_NVRIVA_THIS redraw_area_nd(redraw_x, redraw_y, width, height);
+  }
+}
+
+void bx_nvriva_c::redraw_area_nd(Bit32s x0, Bit32s y0, Bit32u width, Bit32u height)
+{
+  if (s.y_doublescan) {
+    y0 <<= 1;
+    height <<= 1;
+  }
+  if (BX_NVRIVA_THIS svga_double_width) {
+    x0 <<= 1;
+    width <<= 1;
+  }
+  BX_NVRIVA_THIS redraw_area_d(x0, y0, width, height);
+}
+
+void bx_nvriva_c::redraw_area_d(Bit32s x0, Bit32s y0, Bit32u width, Bit32u height)
+{
+  if (x0 + (Bit32s)width <= 0 || y0 + (Bit32s)height <= 0)
+    return;
+
+  if (!BX_NVRIVA_THIS crtc.reg[0x28]) {
+    BX_NVRIVA_THIS bx_vgacore_c::redraw_area(x0, y0, width, height);
+    return;
+  }
+
+  if (BX_NVRIVA_THIS svga_needs_update_mode)
+    return;
+
+  BX_NVRIVA_THIS svga_needs_update_tile = 1;
+
+  unsigned xti, yti, xt0, xt1, yt0, yt1;
+  xt0 = x0 <= 0 ? 0 : x0 / X_TILESIZE;
+  yt0 = y0 <= 0 ? 0 : y0 / Y_TILESIZE;
+  if (x0 < (Bit32s)BX_NVRIVA_THIS svga_xres) {
+    xt1 = (x0 + width - 1) / X_TILESIZE;
+  } else {
+    xt1 = (BX_NVRIVA_THIS svga_xres - 1) / X_TILESIZE;
+  }
+  if (y0 < (Bit32s)BX_NVRIVA_THIS svga_yres) {
+    yt1 = (y0 + height - 1) / Y_TILESIZE;
+  } else {
+    yt1 = (BX_NVRIVA_THIS svga_yres - 1) / Y_TILESIZE;
+  }
+  if ((x0 + width) > BX_NVRIVA_THIS svga_xres) {
+    BX_NVRIVA_THIS redraw_area_d(0, y0 + 1, x0 + width - BX_NVRIVA_THIS svga_xres, height);
+  }
+  for (yti=yt0; yti<=yt1; yti++) {
+    for (xti=xt0; xti<=xt1; xti++) {
+      SET_TILE_UPDATED(BX_NVRIVA_THIS, xti, yti, 1);
+    }
+  }
+}
+
 void bx_nvriva_c::svga_init_pcihandlers(void)
 {
   BX_NVRIVA_THIS devfunc = 0x00;
