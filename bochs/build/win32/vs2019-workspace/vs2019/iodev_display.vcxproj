@@ -218,6 +218,7 @@
     <ClCompile Include="..\iodev\display\banshee.cc" />
     <ClCompile Include="..\iodev\display\ddc.cc" />
     <ClCompile Include="..\iodev\display\geforce.cc" />
+    <ClCompile Include="..\iodev\display\nvriva.cc" />
     <ClCompile Include="..\iodev\display\svga_cirrus.cc" />
     <ClCompile Include="..\iodev\display\vga.cc" />
     <ClCompile Include="..\iodev\display\vgacore.cc" />
@@ -227,6 +228,7 @@
     <ClInclude Include="..\iodev\display\bitblt.h" />
     <ClInclude Include="..\iodev\display\ddc.h" />
     <ClInclude Include="..\iodev\display\geforce.h" />
+    <ClInclude Include="..\iodev\display\nvriva.h" />
     <ClInclude Include="..\iodev\display\svga_cirrus.h" />
     <ClInclude Include="..\iodev\display\vga.h" />
     <ClInclude Include="..\iodev\display\vgacore.h" />
